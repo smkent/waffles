@@ -33,6 +33,7 @@ pytest-sugar = "*"
 tox = "*"
 
 [tool.poetry.scripts]
+waffles = "waffles.main:main"
 
 [tool.poetry-dynamic-versioning]
 enable = true
