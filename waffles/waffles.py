@@ -20,8 +20,7 @@ class Waffles:
     def __init__(self, *args: Any, debug: bool = False, **kwargs: Any):
         self.client = JMAPClientWrapper(*args, **kwargs)
         logging.basicConfig()
-        if debug:
-            log.setLevel(logging.DEBUG)
+        log.setLevel(logging.DEBUG if debug else logging.INFO)
 
     def process_mailbox(self, mailbox_name: str, limit: int = 0) -> None:
         emails = self.client.get_recent_emails_without_replies(mailbox_name)

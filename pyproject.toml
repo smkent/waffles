@@ -31,6 +31,8 @@ pytest = "*"
 pytest-cov = "*"
 pytest-sugar = "*"
 tox = "*"
+freezegun = "^1.1.0"
+types-freezegun = "^1.1.6"
 
 [tool.poetry.scripts]
 waffles = "waffles.main:main"

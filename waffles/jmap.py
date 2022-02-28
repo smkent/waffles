@@ -35,6 +35,8 @@ from jmapc.methods import (
 
 
 class JMAPClientWrapper(jmapc.Client):
+    THREADS_GET_LIMIT = 10
+
     def __init__(
         self,
         *args: Any,
@@ -127,7 +129,7 @@ class JMAPClientWrapper(jmapc.Client):
                     after=datetime.now(tz=timezone.utc) - since,
                 ),
                 sort=[Comparator(property="receivedAt", is_ascending=False)],
-                limit=5,
+                limit=self.THREADS_GET_LIMIT,
             ),
             EmailGet(
                 ids=ResultReference(
