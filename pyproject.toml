@@ -12,6 +12,8 @@ readme = "README.md"
 classifiers = [
     "Development Status :: 1 - Planning",
     "Operating System :: OS Independent",
+    "Topic :: Communications :: Email :: Post-Office",
+    "Topic :: Office/Business :: Groupware",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 
