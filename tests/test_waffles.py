@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Iterable
+from typing import Any, Iterable, List
 from unittest import mock
 
 import pytest
@@ -66,8 +66,11 @@ def test_waffles(
     waffles: Waffles, mock_methods: mock.MagicMock, dry_run: bool
 ) -> None:
     waffles.client.live_mode = not dry_run
-    mock_responses = [
-        [("0", None), ("1", make_mailbox_get_response("MBX50", "pigeonhole"))],
+    mock_responses: List[Any] = []
+    mock_responses.append(
+        [("0", None), ("1", make_mailbox_get_response("MBX50", "pigeonhole"))]
+    )
+    mock_responses.append(
         [
             ("0", None),
             ("1", None),
@@ -87,7 +90,9 @@ def test_waffles(
                     ],
                 ),
             ),
-        ],
+        ]
+    )
+    mock_responses.append(
         EmailGetResponse(
             account_id="u1138",
             state="2187",
@@ -109,7 +114,9 @@ def test_waffles(
                     message_id=["first@ness.onett.example.com"],
                 ),
             ],
-        ),
+        )
+    )
+    mock_responses.append(
         IdentityGetResponse(
             account_id="u1138",
             state="2187",
@@ -126,31 +133,41 @@ def test_waffles(
                     may_delete=False,
                 ),
             ],
-        ),
-        [("0", None), ("1", make_mailbox_get_response("MBX1002", "Drafts"))],
-        [("0", None), ("1", make_mailbox_get_response("MBX1003", "Sent"))],
-        [
-            ("0", None),
-            (
-                "1",
-                EmailSubmissionSetResponse(
-                    account_id="u1138",
-                    old_state="3000",
-                    new_state="3001",
-                    created={"emailToSend": EmailSubmission()},
-                    updated=None,
-                    destroyed=None,
-                    not_created=None,
-                    not_updated=None,
-                    not_destroyed=None,
+        )
+    )
+    mock_responses.append(
+        [("0", None), ("1", make_mailbox_get_response("MBX1002", "Drafts"))]
+    )
+    mock_responses.append(
+        [("0", None), ("1", make_mailbox_get_response("MBX1003", "Sent"))]
+    )
+    if not dry_run:
+        mock_responses.append(
+            [
+                ("0", None),
+                (
+                    "1",
+                    EmailSubmissionSetResponse(
+                        account_id="u1138",
+                        old_state="3000",
+                        new_state="3001",
+                        created={"emailToSend": EmailSubmission()},
+                        updated=None,
+                        destroyed=None,
+                        not_created=None,
+                        not_updated=None,
+                        not_destroyed=None,
+                    ),
                 ),
-            ),
-        ],
-        [("0", None), ("1", make_mailbox_get_response("MBX1000", "Inbox"))],
-    ]
+            ],
+        )
+    mock_responses.append(
+        [("0", None), ("1", make_mailbox_get_response("MBX1000", "Inbox"))]
+    )
 
-    expected_calls = [
-        make_mailbox_get_call("pigeonhole"),
+    expected_calls: List[mock._Call] = []
+    expected_calls.append(make_mailbox_get_call("pigeonhole"))
+    expected_calls.append(
         mock.call(
             [
                 EmailQuery(
@@ -182,92 +199,102 @@ def test_waffles(
                     )
                 ),
             ],
-        ),
+        )
+    )
+    expected_calls.append(
         mock.call(
             EmailGet(
                 ids=["Mdeadbeef"],
                 fetch_all_body_values=True,
                 max_body_value_bytes=1024**2,
             )
-        ),
-        mock.call(IdentityGet()),
-        make_mailbox_get_call("Drafts"),
-        make_mailbox_get_call("Sent"),
-        mock.call(
-            [
-                EmailSet(
-                    create=dict(
-                        draft=Email(
-                            mail_from=[
-                                EmailAddress(email="ness@onett.example.com")
-                            ],
-                            to=[
-                                EmailAddress(email="paula@twoson.example.com")
-                            ],
-                            subject="Re: None",
-                            body_values=dict(
-                                body=EmailBodyValue(
-                                    value=(
-                                        "Reply to your email below:"
-                                        "\n\n----\n\n(no message)"
-                                    )
-                                )
-                            ),
-                            text_body=[
-                                EmailBodyPart(
-                                    part_id="body", type="text/plain"
-                                )
-                            ],
-                            in_reply_to=["first@ness.onett.example.com"],
-                            references=["first@ness.onett.example.com"],
-                            headers=[
-                                EmailHeader(
-                                    name="User-Agent",
-                                    value="waffles/0.0.0-dev0 (jmapc)",
-                                )
-                            ],
-                            message_id=[
-                                (
-                                    "1994.08.24T19.01.02@waffles.dev.example"
-                                    "_ness.onett.example.com"
-                                )
-                            ],
-                            keywords={"$draft": True},
-                            mailbox_ids={"MBX1002": True},
-                        )
-                    )
-                ),
-                EmailSubmissionSet(
-                    create=dict(
-                        emailToSend=EmailSubmission(
-                            email_id="#draft",
-                            identity_id="ID1",
-                            envelope=Envelope(
-                                mail_from=Address(
-                                    email="ness@onett.example.com",
-                                    parameters=None,
-                                ),
-                                rcpt_to=[
-                                    Address(
-                                        email="paula@twoson.example.com",
-                                        parameters=None,
+        )
+    )
+    expected_calls.append(mock.call(IdentityGet()))
+    expected_calls.append(make_mailbox_get_call("Drafts"))
+    expected_calls.append(make_mailbox_get_call("Sent"))
+    if not dry_run:
+        expected_calls.append(
+            mock.call(
+                [
+                    EmailSet(
+                        create=dict(
+                            draft=Email(
+                                mail_from=[
+                                    EmailAddress(
+                                        email="ness@onett.example.com"
                                     )
                                 ],
-                            ),
+                                to=[
+                                    EmailAddress(
+                                        email="paula@twoson.example.com"
+                                    )
+                                ],
+                                subject="Re: None",
+                                body_values=dict(
+                                    body=EmailBodyValue(
+                                        value=(
+                                            "Reply to your email below:"
+                                            "\n\n----\n\n(no message)"
+                                        )
+                                    )
+                                ),
+                                text_body=[
+                                    EmailBodyPart(
+                                        part_id="body", type="text/plain"
+                                    )
+                                ],
+                                in_reply_to=["first@ness.onett.example.com"],
+                                references=["first@ness.onett.example.com"],
+                                headers=[
+                                    EmailHeader(
+                                        name="User-Agent",
+                                        value="waffles/0.0.0-dev0 (jmapc)",
+                                    )
+                                ],
+                                message_id=[
+                                    (
+                                        "1994.08.24T19.01.02"
+                                        "@waffles.dev.example"
+                                        "_ness.onett.example.com"
+                                    )
+                                ],
+                                keywords={"$draft": True},
+                                mailbox_ids={"MBX1002": True},
+                            )
                         )
                     ),
-                    on_success_update_email={
-                        "#emailToSend": {
-                            "keywords/$draft": None,
-                            "mailboxIds/MBX1002": None,
-                            "mailboxIds/MBX1003": True,
-                        }
-                    },
-                ),
-            ]
-        ),
-        make_mailbox_get_call("Inbox"),
-    ]
+                    EmailSubmissionSet(
+                        create=dict(
+                            emailToSend=EmailSubmission(
+                                email_id="#draft",
+                                identity_id="ID1",
+                                envelope=Envelope(
+                                    mail_from=Address(
+                                        email="ness@onett.example.com",
+                                        parameters=None,
+                                    ),
+                                    rcpt_to=[
+                                        Address(
+                                            email="paula@twoson.example.com",
+                                            parameters=None,
+                                        )
+                                    ],
+                                ),
+                            )
+                        ),
+                        on_success_update_email={
+                            "#emailToSend": {
+                                "keywords/$draft": None,
+                                "mailboxIds/MBX1002": None,
+                                "mailboxIds/MBX1003": True,
+                            }
+                        },
+                    ),
+                ]
+            )
+        )
+    expected_calls.append(make_mailbox_get_call("Inbox"))
     mock_methods.side_effect = mock_responses
     waffles.process_mailbox("pigeonhole", limit=1)
     assert mock_methods.call_args_list == expected_calls
