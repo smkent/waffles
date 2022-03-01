@@ -36,6 +36,10 @@ from waffles import Waffles
 
 from .method_utils import make_mailbox_get_call, make_mailbox_get_response
 
+REPLY_TEMPLATE = (
+    "<b>Hi there</b>. I'm a <i>test</i> message for unit testing.<br />"
+)
+
 
 @pytest.fixture
 def waffles() -> Iterable[Waffles]:
@@ -44,6 +48,7 @@ def waffles() -> Iterable[Waffles]:
             host="jmap-example.localhost",
             user="ness",
             password="pk_fire",
+            reply_template=REPLY_TEMPLATE,
         )
 
 
@@ -238,16 +243,30 @@ def test_waffles(
                                 ],
                                 subject="Re: Day Trip to Happy Happy Village",
                                 body_values=dict(
-                                    body=EmailBodyValue(
+                                    text=EmailBodyValue(
                                         value=(
-                                            "Reply to your email below:"
-                                            "\n\n----\n\n(no message)"
+                                            "**Hi there**. I'm a _test_ "
+                                            "message for unit testing.  \n\n"
                                         )
-                                    )
+                                    ),
+                                    html=EmailBodyValue(
+                                        value=(
+                                            "<!DOCTYPE html>\n<html><head>"
+                                            "<title></title></head><body>"
+                                            "<b>Hi there</b>. I'm a "
+                                            "<i>test</i> message for "
+                                            "unit testing.<br/></body></html>"
+                                        )
+                                    ),
                                 ),
                                 text_body=[
                                     EmailBodyPart(
-                                        part_id="body", type="text/plain"
+                                        part_id="text", type="text/plain"
+                                    )
+                                ],
+                                html_body=[
+                                    EmailBodyPart(
+                                        part_id="html", type="text/html"
                                     )
                                 ],
                                 in_reply_to=["first@ness.onett.example.com"],
