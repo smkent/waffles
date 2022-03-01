@@ -1,6 +1,6 @@
 import logging
 import re
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Any, Optional
 
 from jmapc import (
@@ -34,14 +34,7 @@ class Waffles:
             break
 
     def _msgid(self, mail_from: str) -> str:
-        dt = (
-            datetime.now()
-            .astimezone(timezone.utc)
-            .replace(tzinfo=None)
-            .isoformat()
-            .replace(":", ".")
-            .replace("-", ".")
-        )
+        dt = datetime.utcnow().isoformat().replace(":", ".").replace("-", ".")
         dotaddr = re.sub(r"\W", ".", mail_from)
         return f"{dt}@waffles.dev.example_{dotaddr}"
 
