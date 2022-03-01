@@ -15,6 +15,7 @@ classifiers = [
     "Topic :: Communications :: Email :: Post-Office",
     "Topic :: Office/Business :: Groupware",
     "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
 ]
 
 [tool.poetry.dependencies]
