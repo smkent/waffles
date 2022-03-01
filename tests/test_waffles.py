@@ -111,7 +111,9 @@ def test_waffles(
                             name="Paula", email="paula@twoson.example.com"
                         )
                     ],
+                    subject="Day Trip to Happy Happy Village",
                     message_id=["first@ness.onett.example.com"],
+                    received_at=datetime.now().astimezone(timezone.utc),
                 ),
             ],
         )
@@ -151,7 +153,11 @@ def test_waffles(
                         account_id="u1138",
                         old_state="3000",
                         new_state="3001",
-                        created={"emailToSend": EmailSubmission()},
+                        created={
+                            "emailToSend": EmailSubmission(
+                                send_at=datetime.now().astimezone(timezone.utc)
+                            )
+                        },
                         updated=None,
                         destroyed=None,
                         not_created=None,
@@ -230,7 +236,7 @@ def test_waffles(
                                         email="paula@twoson.example.com"
                                     )
                                 ],
-                                subject="Re: None",
+                                subject="Re: Day Trip to Happy Happy Village",
                                 body_values=dict(
                                     body=EmailBodyValue(
                                         value=(
@@ -254,7 +260,7 @@ def test_waffles(
                                 ],
                                 message_id=[
                                     (
-                                        "1994.08.24T19.01.02"
+                                        "1994.08.24T12.01.02"
                                         "@waffles.dev.example"
                                         "_ness.onett.example.com"
                                     )
