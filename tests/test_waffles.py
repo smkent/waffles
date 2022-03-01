@@ -187,7 +187,7 @@ def test_waffles(
             EmailGet(
                 ids=["Mdeadbeef"],
                 fetch_all_body_values=True,
-                max_body_value_bytes=1024 ** 2,
+                max_body_value_bytes=1024**2,
             )
         ),
         mock.call(IdentityGet()),
