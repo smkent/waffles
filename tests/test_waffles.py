@@ -8,6 +8,8 @@ from jmapc.methods import IdentityGet
 from waffles import Waffles
 
 from .method_utils import (
+    make_email_archive_call,
+    make_email_archive_response,
     make_email_get_call,
     make_email_get_response,
     make_email_send_call,
@@ -64,6 +66,8 @@ def test_waffles(
     if not dry_run:
         expected_calls.append(make_email_send_call())
     expected_calls.append(make_mailbox_get_call("Inbox"))
+    if not dry_run:
+        expected_calls.append(make_email_archive_call())
     mock_responses: List[Any] = []
     mock_responses.append(make_mailbox_get_response("MBX50", "pigeonhole"))
     mock_responses.append(make_thread_search_response())
@@ -74,6 +78,8 @@ def test_waffles(
     if not dry_run:
         mock_responses.append(make_email_send_response())
     mock_responses.append(make_mailbox_get_response("MBX1000", "Inbox"))
+    if not dry_run:
+        mock_responses.append(make_email_archive_response())
     mock_methods.side_effect = mock_responses
 
     waffles.process_mailbox("pigeonhole", limit=1)

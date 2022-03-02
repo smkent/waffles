@@ -25,6 +25,7 @@ from jmapc.methods import (
     EmailGetResponse,
     EmailQuery,
     EmailSet,
+    EmailSetResponse,
     EmailSubmissionSet,
     EmailSubmissionSetResponse,
     IdentityGetResponse,
@@ -187,6 +188,7 @@ def make_email_get_response() -> EmailGetResponse:
                 subject="Day Trip to Happy Happy Village",
                 message_id=["first@ness.onett.example.com"],
                 received_at=datetime.now().astimezone(timezone.utc),
+                mailbox_ids={"MBX1000": True},
             ),
         ],
     )
@@ -301,3 +303,23 @@ def make_email_send_response() -> List[
             ),
         ),
     ]
+
+
+def make_email_archive_call() -> mock._Call:
+    return mock.call(
+        EmailSet(update={"Mdeadbeef": {"mailboxIds/MBX1000": None}})
+    )
+
+
+def make_email_archive_response() -> EmailSetResponse:
+    return EmailSetResponse(
+        account_id="u1138",
+        old_state="3000",
+        new_state="3001",
+        created=None,
+        updated={"Mdeadbeef": None},
+        destroyed=None,
+        not_created=None,
+        not_updated=None,
+        not_destroyed=None,
+    )
