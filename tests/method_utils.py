@@ -35,6 +35,8 @@ from jmapc.methods import (
     ThreadGetResponse,
 )
 
+local_tz_abbrev = datetime(1994, 8, 24, 12, 1, 2).astimezone().strftime("%Z")
+
 
 def make_identity_get_response() -> IdentityGetResponse:
     return IdentityGetResponse(
@@ -221,7 +223,8 @@ def make_email_send_call() -> mock._Call:
                                 value=(
                                     "**Hi there**. I'm a _test_ message "
                                     "for unit testing.  \n\n----\n\n"
-                                    "On Wed Aug 24 1994 12:01 PDT, Paula "
+                                    "On Wed Aug 24 1994 12:01 "
+                                    f"{local_tz_abbrev}, Paula "
                                     "<paula@twoson.example.com> wrote:\n\n"
                                     "> plain_text"
                                 )
@@ -232,7 +235,8 @@ def make_email_send_call() -> mock._Call:
                                     "<title></title></head><body>"
                                     "<b>Hi there</b>. I'm a <i>test</i> "
                                     "message for unit testing.<br/><div>"
-                                    "On Wed Aug 24 1994 12:01 PDT, Paula "
+                                    "On Wed Aug 24 1994 12:01 "
+                                    f"{local_tz_abbrev}, Paula "
                                     "&lt;paula@twoson.example.com&gt; wrote:"
                                     "<br/></div><blockquote "
                                     'style="margin-left: 0.8ex; '
