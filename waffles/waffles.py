@@ -40,7 +40,7 @@ class Waffles:
             )
             self._reply_to_email(email)
             self.client.archive_email(email)
-            if i >= limit:
+            if limit and i + 1 >= limit:
                 break
 
     def _reply_to_email(self, email: Email) -> None:
