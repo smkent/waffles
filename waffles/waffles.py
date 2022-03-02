@@ -3,14 +3,7 @@ import re
 from datetime import datetime
 from typing import Any, Optional
 
-from jmapc import (
-    Email,
-    EmailAddress,
-    EmailBodyPart,
-    EmailBodyValue,
-    EmailHeader,
-    Identity,
-)
+from jmapc import Email
 from jmapc.logging import log
 from replyowl import ReplyOwl
 
@@ -44,39 +37,16 @@ class Waffles:
                 break
 
     def _reply_to_email(self, email: Email) -> None:
-        identity = self.client.get_identity_matching_recipients(email)
-        assert isinstance(
-            identity, Identity
-        ), "No identity found matching any recipients"
-        subject = f"Re: {email.subject}"
-        mail_to = self._get_reply_address(email)
         text_body, html_body = self.replyowl.compose_reply(
             content=self.reply_template,
             quote_html=self._get_email_body_html(email),
             quote_text=self._get_email_body_text(email),
             quote_attribution=self._quote_attribution_line(email),
         )
-        assert email.message_id and email.message_id[0]
-        email = Email(
-            mail_from=[EmailAddress(email=identity.email)],
-            to=[EmailAddress(email=mail_to)],
-            subject=subject,
-            body_values=dict(
-                text=EmailBodyValue(value=text_body),
-                html=EmailBodyValue(value=html_body),
-            ),
-            text_body=[EmailBodyPart(part_id="text", type="text/plain")],
-            html_body=[EmailBodyPart(part_id="html", type="text/html")],
-            in_reply_to=email.message_id,
-            references=(email.references or []) + email.message_id,
-            headers=[
-                EmailHeader(
-                    name="User-Agent", value="waffles/0.0.0-dev0 (jmapc)"
-                )
-            ],
-            message_id=[self._make_messageid(identity.email)],
+        assert text_body
+        self.client.send_reply_to_email(
+            email, text_body, html_body, keep_sent_copy=True
         )
-        self.client.send_email(email, keep_sent_copy=True)
 
     def _make_messageid(self, mail_from: str) -> str:
         dt = datetime.utcnow().isoformat().replace(":", ".").replace("-", ".")

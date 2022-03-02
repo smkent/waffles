@@ -1,6 +1,7 @@
 import functools
 import json
 import logging
+import re
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
@@ -9,6 +10,10 @@ from jmapc import (
     Address,
     Comparator,
     Email,
+    EmailAddress,
+    EmailBodyPart,
+    EmailBodyValue,
+    EmailHeader,
     EmailQueryFilterCondition,
     EmailSubmission,
     Envelope,
@@ -184,6 +189,56 @@ class JMAPClientWrapper(jmapc.Client):
             print(">>>>>>>>>>")
             return
         self.method_call(method)
+
+    def _get_reply_address(self, email: Email) -> str:
+        if email.reply_to:
+            assert email.reply_to[0]
+            if email.reply_to[0].email:
+                return email.reply_to[0].email
+        assert email.mail_from
+        assert email.mail_from[0]
+        from_email = email.mail_from[0].email
+        assert from_email
+        return from_email
+
+    def _make_messageid(self, mail_from: str) -> str:
+        dt = datetime.utcnow().isoformat().replace(":", ".").replace("-", ".")
+        dotaddr = re.sub(r"\W", ".", mail_from)
+        return f"{dt}@waffles.dev.example_{dotaddr}"
+
+    def send_reply_to_email(
+        self,
+        email: Email,
+        text_body: str,
+        html_body: Optional[str] = None,
+        keep_sent_copy: bool = True,
+    ) -> Optional[EmailSubmission]:
+        identity = self.get_identity_matching_recipients(email)
+        assert isinstance(
+            identity, Identity
+        ), "No identity found matching any recipients"
+        mail_to = self._get_reply_address(email)
+        assert email.message_id and email.message_id[0]
+        reply_email = Email(
+            mail_from=[EmailAddress(email=identity.email)],
+            to=[EmailAddress(email=mail_to)],
+            subject=f"Re: {email.subject}",
+            body_values=dict(
+                text=EmailBodyValue(value=text_body),
+                html=EmailBodyValue(value=html_body),
+            ),
+            text_body=[EmailBodyPart(part_id="text", type="text/plain")],
+            html_body=[EmailBodyPart(part_id="html", type="text/html")],
+            in_reply_to=email.message_id,
+            references=(email.references or []) + email.message_id,
+            headers=[
+                EmailHeader(
+                    name="User-Agent", value="waffles/0.0.0-dev0 (jmapc)"
+                )
+            ],
+            message_id=[self._make_messageid(identity.email)],
+        )
+        return self.send_email(reply_email, keep_sent_copy=keep_sent_copy)
 
     def send_email(
         self, email: Email, keep_sent_copy: bool = True
