@@ -9,6 +9,15 @@ from .waffles import Waffles
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument(
+        "-r",
+        "--reply-template",
+        dest="reply_template",
+        metavar="file",
+        required=True,
+        type=argparse.FileType("r"),
+        help="Email reply template",
+    )
+    ap.add_argument(
         "-d",
         "--debug",
         action="store_true",
@@ -51,5 +60,6 @@ def main() -> None:
         user=os.environ["JMAP_USER"],
         password=os.environ["JMAP_PASSWORD"],
         live_mode=not args.dry_run,
+        reply_template=args.reply_template.read(),
     )
     w.process_mailbox(args.mailbox, limit=args.limit)

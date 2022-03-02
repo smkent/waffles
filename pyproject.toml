@@ -15,11 +15,13 @@ classifiers = [
     "Topic :: Communications :: Email :: Post-Office",
     "Topic :: Office/Business :: Groupware",
     "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
 ]
 
 [tool.poetry.dependencies]
 python = "^3.8"
 jmapc = "^0.1.5"
+replyowl = "^0.1.0"
 
 [tool.poetry.dev-dependencies]
 black = "*"
