@@ -1,6 +1,6 @@
-# waffles: Tech recruiter auto reply bot using [JMAP][jmap] via [jmapc][jmapc]
+# wafflesbot: Tech recruiter auto reply bot using [JMAP][jmap] via [jmapc][jmapc]
 
-waffles is in initial development.
+wafflesbot is in initial development.
 
 ## Development
 

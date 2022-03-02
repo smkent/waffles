@@ -1,4 +1,4 @@
 def test_import() -> None:
-    import waffles
+    import wafflesbot
 
-    assert waffles
+    assert wafflesbot

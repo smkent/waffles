@@ -3,7 +3,7 @@ requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-name = "waffles"
+name = "wafflesbot"
 version = "0.0.0"
 description = "Tech recruiter auto reply bot using JMAP"
 license = "GPL-3.0-or-later"
@@ -37,7 +37,7 @@ freezegun = "^1.1.0"
 types-freezegun = "^1.1.6"
 
 [tool.poetry.scripts]
-waffles = "waffles.main:main"
+wafflesbot = "wafflesbot.main:main"
 
 [tool.poetry-dynamic-versioning]
 enable = true
@@ -48,18 +48,18 @@ style = "semver"
 lt = ["lint", "test"]
 
 lint = ["isort_lint", "black_lint"]
-black_lint = { cmd = "black -l 79 -- tests/ waffles/" }
-isort_lint = { cmd = "isort -- tests/ waffles/" }
+black_lint = { cmd = "black -l 79 -- tests/ wafflesbot/" }
+isort_lint = { cmd = "isort -- tests/ wafflesbot/" }
 
 test = ["flake8", "isort", "black", "mypy", "pytest"]
-black = { cmd = "black -l 79 --check --diff --color -- tests/ waffles/" }
-isort = { cmd = "isort --check-only -- tests/ waffles/" }
+black = { cmd = "black -l 79 --check --diff --color -- tests/ wafflesbot/" }
+isort = { cmd = "isort --check-only -- tests/ wafflesbot/" }
 flake8 = { cmd = "flake8" }
 mypy = { cmd = "mypy" }
 pytest = { cmd = "pytest" }
 
 [tool.coverage.run]
-source = ["waffles"]
+source = ["wafflesbot"]
 
 [tool.coverage.report]
 fail_under = 0
@@ -71,7 +71,7 @@ profile = "black"
 line_length = 79
 
 [tool.mypy]
-files = [ "tests", "waffles" ]
+files = [ "tests", "wafflesbot" ]
 disallow_untyped_defs = true
 no_implicit_optional = true
 check_untyped_defs = true

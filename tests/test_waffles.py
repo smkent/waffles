@@ -5,7 +5,7 @@ import pytest
 from freezegun import freeze_time
 from jmapc.methods import IdentityGet
 
-from waffles import Waffles
+from wafflesbot import Waffles
 
 from .method_utils import (
     make_email_archive_call,
@@ -27,7 +27,7 @@ REPLY_TEMPLATE = (
 
 
 @pytest.fixture
-def waffles() -> Iterable[Waffles]:
+def wafflesbot() -> Iterable[Waffles]:
     with freeze_time("1994-08-24 12:01:02"):
         yield Waffles(
             host="jmap-example.localhost",
@@ -39,15 +39,15 @@ def waffles() -> Iterable[Waffles]:
 
 
 @pytest.fixture
-def mock_methods(waffles: Waffles) -> Iterable[mock.MagicMock]:
+def mock_methods(wafflesbot: Waffles) -> Iterable[mock.MagicMock]:
     methods_mock = mock.MagicMock()
     session_mock = mock.MagicMock(primary_accounts=dict(mail="u1138"))
     with mock.patch.object(
-        waffles.client, "_session", session_mock
+        wafflesbot.client, "_session", session_mock
     ), mock.patch.object(
-        waffles.client, "method_call", methods_mock
+        wafflesbot.client, "method_call", methods_mock
     ), mock.patch.object(
-        waffles.client, "method_calls", methods_mock
+        wafflesbot.client, "method_calls", methods_mock
     ):
         yield methods_mock
 
@@ -80,14 +80,14 @@ def assert_or_debug_calls(
 @pytest.mark.parametrize(
     "original_email_in_inbox", [True, False], ids=["in_inbox", "archived"]
 )
-def test_waffles(
-    waffles: Waffles,
+def test_wafflesbot(
+    wafflesbot: Waffles,
     mock_methods: mock.MagicMock,
     dry_run: bool,
     original_email_read: bool,
     original_email_in_inbox: bool,
 ) -> None:
-    waffles.client.live_mode = not dry_run
+    wafflesbot.client.live_mode = not dry_run
     expected_calls: List[mock._Call] = []
     expected_calls.append(make_mailbox_get_call("pigeonhole"))
     expected_calls.append(make_thread_search_call())
@@ -127,7 +127,7 @@ def test_waffles(
             mock_responses.append(archive_response)
     mock_methods.side_effect = mock_responses
 
-    waffles.process_mailbox("pigeonhole", limit=1)
+    wafflesbot.process_mailbox("pigeonhole", limit=1)
     assert_or_debug_calls(mock_methods.call_args_list, expected_calls)
     with pytest.raises(StopIteration):
         mock_methods()

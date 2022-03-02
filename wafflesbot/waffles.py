@@ -70,7 +70,7 @@ class Waffles:
         )
         assert text_body
         user_agent = (
-            f"waffles/{version} ("
+            f"wafflesbot/{version} ("
             + ", ".join(
                 (
                     f"jmapc {jmapc_version}",
