@@ -16,14 +16,14 @@ class Waffles:
     def __init__(
         self,
         *args: Any,
-        reply_template: str,
+        reply_content: str,
         newer_than_days: int = 1,
         debug: bool = False,
         **kwargs: Any,
     ):
         self.client = JMAPClientWrapper(*args, **kwargs)
         self.replyowl = ReplyOwl()
-        self.reply_template = reply_template
+        self.reply_content = reply_content
         self.newer_than_days = newer_than_days
         logging.basicConfig(level=logging.INFO)
         log.setLevel(logging.DEBUG if debug else logging.INFO)
@@ -63,7 +63,7 @@ class Waffles:
 
     def _reply_to_email(self, email: Email) -> None:
         text_body, html_body = self.replyowl.compose_reply(
-            content=self.reply_template,
+            content=self.reply_content,
             quote_html=self._get_email_body_html(email),
             quote_text=self._get_email_body_text(email),
             quote_attribution=self._quote_attribution_line(email),

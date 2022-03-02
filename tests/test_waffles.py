@@ -21,10 +21,6 @@ from .method_utils import (
     make_thread_search_response,
 )
 
-REPLY_TEMPLATE = (
-    "<b>Hi there</b>. I'm a <i>test</i> message for unit testing.<br />"
-)
-
 
 @pytest.fixture
 def wafflesbot() -> Iterable[Waffles]:
@@ -33,7 +29,10 @@ def wafflesbot() -> Iterable[Waffles]:
             host="jmap-example.localhost",
             user="ness",
             password="pk_fire",
-            reply_template=REPLY_TEMPLATE,
+            reply_content=(
+                "<b>Hi there</b>. I'm a <i>test</i> message "
+                "for unit testing.<br />"
+            ),
             newer_than_days=7,
         )
 

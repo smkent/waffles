@@ -10,12 +10,12 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument(
         "-r",
-        "--reply-template",
-        dest="reply_template",
+        "--reply-content",
+        dest="reply_content",
         metavar="file",
         required=True,
         type=argparse.FileType("r"),
-        help="Email reply template",
+        help="File with email reply HTML content",
     )
     ap.add_argument(
         "-d",
@@ -74,7 +74,7 @@ def main() -> None:
         user=os.environ["JMAP_USER"],
         password=os.environ["JMAP_PASSWORD"],
         live_mode=not args.dry_run,
-        reply_template=args.reply_template.read(),
+        reply_content=args.reply_content.read(),
         newer_than_days=args.newer_than_days,
     )
     w.process_mailbox(args.mailbox, limit=args.limit)

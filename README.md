@@ -37,7 +37,7 @@ Environment variables:
 
 Required arguments:
 * `-m/--mailbox`: Name of the folder to process
-* `-r/--reply-template`: Path to file with an HTML reply message
+* `-r/--reply-content`: Path to file with an HTML reply message
 
 ### Invocation examples
 
@@ -48,7 +48,7 @@ JMAP_USER=ness \
 JMAP_PASSWORD=pk_fire \
 waffles \
     --mailbox "Recruiters" \
-    --reply-template my-reply.html
+    --reply-content my-reply.html
 ```
 
 Additional argument examples:
