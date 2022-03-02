@@ -122,8 +122,9 @@ class JMAPClientWrapper(jmapc.Client):
     def get_recent_emails_without_replies(
         self, mailbox_name: str, since: Optional[timedelta] = None
     ) -> List[Email]:
-        if not since:
-            since = timedelta(days=365)
+        after: Optional[datetime] = None
+        if since:
+            after = datetime.now(tz=timezone.utc) - since
         mailbox = self.mailbox_by_name(mailbox_name)
         if not mailbox:
             raise Exception(f'No mailbox named "{mailbox_name}" found')
@@ -132,7 +133,7 @@ class JMAPClientWrapper(jmapc.Client):
                 collapse_threads=True,
                 filter=EmailQueryFilterCondition(
                     in_mailbox=mailbox.id,
-                    after=datetime.now(tz=timezone.utc) - since,
+                    after=after,
                 ),
                 sort=[Comparator(property="receivedAt", is_ascending=False)],
                 limit=self.THREADS_GET_LIMIT,

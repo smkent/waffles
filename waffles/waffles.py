@@ -1,4 +1,5 @@
 import logging
+from datetime import timedelta
 from typing import Any, Optional
 
 from jmapc import Email
@@ -16,17 +17,24 @@ class Waffles:
         self,
         *args: Any,
         reply_template: str,
+        newer_than_days: int = 1,
         debug: bool = False,
         **kwargs: Any,
     ):
         self.client = JMAPClientWrapper(*args, **kwargs)
         self.replyowl = ReplyOwl()
         self.reply_template = reply_template
+        self.newer_than_days = newer_than_days
         logging.basicConfig(level=logging.INFO)
         log.setLevel(logging.DEBUG if debug else logging.INFO)
 
     def process_mailbox(self, mailbox_name: str, limit: int = 0) -> None:
-        emails = self.client.get_recent_emails_without_replies(mailbox_name)
+        since: Optional[timedelta] = None
+        if self.newer_than_days:
+            since = timedelta(days=self.newer_than_days)
+        emails = self.client.get_recent_emails_without_replies(
+            mailbox_name, since=since
+        )
         for i, email in enumerate(emails):
             print(
                 f"[{email.received_at}] FROM {email.mail_from}: "

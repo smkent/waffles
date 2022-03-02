@@ -53,6 +53,20 @@ def main() -> None:
         type=int,
         help="Maximum number of email replies to send (0 for no limit)",
     )
+    ap.add_argument(
+        "-n",
+        "--days",
+        "--newer-than-days",
+        dest="newer_than_days",
+        metavar="days",
+        default=1,
+        type=int,
+        help=(
+            "Only process email received this many days ago or newer "
+            "(default: %(default)s)"
+        ),
+    )
+
     args = ap.parse_args()
     w = Waffles(
         debug=args.debug,
@@ -61,5 +75,6 @@ def main() -> None:
         password=os.environ["JMAP_PASSWORD"],
         live_mode=not args.dry_run,
         reply_template=args.reply_template.read(),
+        newer_than_days=args.newer_than_days,
     )
     w.process_mailbox(args.mailbox, limit=args.limit)
