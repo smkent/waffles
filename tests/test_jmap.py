@@ -1,6 +1,6 @@
 import jmapc
 
-from waffles.jmap import JMAPClientWrapper
+from wafflesbot.jmap import JMAPClientWrapper
 
 
 def test_client() -> None:

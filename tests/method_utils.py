@@ -262,7 +262,7 @@ def make_email_send_call() -> mock._Call:
                             EmailHeader(
                                 name="User-Agent",
                                 value=(
-                                    "waffles/0.0.0 "
+                                    "wafflesbot/0.0.0 "
                                     f"(jmapc {jmapc_version}, "
                                     f"replyowl {replyowl_version})"
                                 ),
@@ -271,7 +271,7 @@ def make_email_send_call() -> mock._Call:
                         message_id=[
                             (
                                 "1994.08.24T12.01.02"
-                                "@waffles.dev.example"
+                                "@wafflesbot.dev.example"
                                 "_ness.onett.example.com"
                             )
                         ],

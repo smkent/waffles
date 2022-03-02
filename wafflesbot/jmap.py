@@ -205,7 +205,7 @@ class JMAPClientWrapper(jmapc.Client):
     def _make_messageid(self, mail_from: str) -> str:
         dt = datetime.utcnow().isoformat().replace(":", ".").replace("-", ".")
         dotaddr = re.sub(r"\W", ".", mail_from)
-        return f"{dt}@waffles.dev.example_{dotaddr}"
+        return f"{dt}@wafflesbot.dev.example_{dotaddr}"
 
     def send_reply_to_email(
         self,
