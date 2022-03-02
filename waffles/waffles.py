@@ -33,14 +33,15 @@ class Waffles:
 
     def process_mailbox(self, mailbox_name: str, limit: int = 0) -> None:
         emails = self.client.get_recent_emails_without_replies(mailbox_name)
-        for email in emails:
+        for i, email in enumerate(emails):
             print(
                 f"[{email.received_at}] FROM {email.mail_from}: "
                 f"{email.subject}"
             )
             self.reply_to_email(email)
             self.client.archive_email(email)
-            break
+            if i >= limit:
+                break
 
     def _msgid(self, mail_from: str) -> str:
         dt = datetime.utcnow().isoformat().replace(":", ".").replace("-", ".")
