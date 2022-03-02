@@ -209,7 +209,7 @@ plugins = ["setuptools"]
 
 [[package]]
 name = "jmapc"
-version = "0.1.6"
+version = "0.1.7"
 description = "JMAP client library for Python"
 category = "main"
 optional = false
@@ -729,8 +729,8 @@ isort = [
     {file = "isort-5.10.1.tar.gz", hash = "sha256:e8443a5e7a020e9d7f97f1d7d9cd17c88bcb3bc7e218bf9cf5095fe550be2951"},
 ]
 jmapc = [
-    {file = "jmapc-0.1.6-py3-none-any.whl", hash = "sha256:3f79bbbc089dce8d21c68a9afbb692e433d608ba7d034c272a2a2d8998877c64"},
-    {file = "jmapc-0.1.6.tar.gz", hash = "sha256:2fb4e95c5fa98eeedf172e87a9a0c27be076c67f626b24435a0bfe03bd93d60d"},
+    {file = "jmapc-0.1.7-py3-none-any.whl", hash = "sha256:c73eaeac472dc02f6d05f45d01998cb8a41f04c5c9b1bbbe3a48849c05765d16"},
+    {file = "jmapc-0.1.7.tar.gz", hash = "sha256:f40443df2ad27537e9c58441572955a72a29f7b9e52b4b01d64943a669b47e23"},
 ]
 marshmallow = [
     {file = "marshmallow-3.14.1-py3-none-any.whl", hash = "sha256:04438610bc6dadbdddb22a4a55bcc7f6f8099e69580b2e67f5a681933a1f4400"},

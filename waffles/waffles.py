@@ -2,9 +2,12 @@ import logging
 from typing import Any, Optional
 
 from jmapc import Email
+from jmapc import version as jmapc_version
 from jmapc.logging import log
 from replyowl import ReplyOwl
+from replyowl import version as replyowl_version
 
+from . import version
 from .jmap import JMAPClientWrapper
 
 
@@ -58,8 +61,23 @@ class Waffles:
             quote_attribution=self._quote_attribution_line(email),
         )
         assert text_body
+        user_agent = (
+            f"waffles/{version} ("
+            + ", ".join(
+                (
+                    f"jmapc {jmapc_version}",
+                    f"replyowl {replyowl_version}",
+                )
+            )
+            + ")"
+        )
+
         self.client.send_reply_to_email(
-            email, text_body, html_body, keep_sent_copy=True
+            email,
+            text_body,
+            html_body,
+            user_agent=user_agent,
+            keep_sent_copy=True,
         )
 
     def _quote_attribution_line(self, email: Email) -> str:

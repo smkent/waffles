@@ -19,6 +19,7 @@ from jmapc import (
     ResultReference,
     Thread,
 )
+from jmapc import version as jmapc_version
 from jmapc.methods import (
     EmailGet,
     EmailGetResponse,
@@ -34,6 +35,7 @@ from jmapc.methods import (
     ThreadGet,
     ThreadGetResponse,
 )
+from replyowl import version as replyowl_version
 
 local_tz_abbrev = datetime(1994, 8, 24, 12, 1, 2).astimezone().strftime("%Z")
 
@@ -259,7 +261,11 @@ def make_email_send_call() -> mock._Call:
                         headers=[
                             EmailHeader(
                                 name="User-Agent",
-                                value="waffles/0.0.0 (jmapc)",
+                                value=(
+                                    "waffles/0.0.0 "
+                                    f"(jmapc {jmapc_version}, "
+                                    f"replyowl {replyowl_version})"
+                                ),
                             )
                         ],
                         message_id=[

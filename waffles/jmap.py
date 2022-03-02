@@ -39,8 +39,6 @@ from jmapc.methods import (
     ThreadGetResponse,
 )
 
-from . import version
-
 
 class JMAPClientWrapper(jmapc.Client):
     THREADS_GET_LIMIT = 10
@@ -213,6 +211,7 @@ class JMAPClientWrapper(jmapc.Client):
         email: Email,
         text_body: str,
         html_body: Optional[str] = None,
+        user_agent: Optional[str] = None,
         keep_sent_copy: bool = True,
     ) -> Optional[EmailSubmission]:
         identity = self.get_identity_matching_recipients(email)
@@ -221,6 +220,10 @@ class JMAPClientWrapper(jmapc.Client):
         ), "No identity found matching any recipients"
         mail_to = self._get_reply_address(email)
         assert email.message_id and email.message_id[0]
+        headers: List[EmailHeader] = []
+        if user_agent:
+            headers.append(EmailHeader(name="User-Agent", value=user_agent))
+
         reply_email = Email(
             mail_from=[EmailAddress(email=identity.email)],
             to=[EmailAddress(email=mail_to)],
@@ -233,11 +236,7 @@ class JMAPClientWrapper(jmapc.Client):
             html_body=[EmailBodyPart(part_id="html", type="text/html")],
             in_reply_to=email.message_id,
             references=(email.references or []) + email.message_id,
-            headers=[
-                EmailHeader(
-                    name="User-Agent", value=f"waffles/{version} (jmapc)"
-                )
-            ],
+            headers=headers,
             message_id=[self._make_messageid(identity.email)],
         )
         return self.send_email(reply_email, keep_sent_copy=keep_sent_copy)
