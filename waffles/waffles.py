@@ -1,19 +1,13 @@
 import logging
-import re
-from datetime import datetime
 from typing import Any, Optional
 
-from jmapc import (
-    Email,
-    EmailAddress,
-    EmailBodyPart,
-    EmailBodyValue,
-    EmailHeader,
-    Identity,
-)
+from jmapc import Email
+from jmapc import version as jmapc_version
 from jmapc.logging import log
 from replyowl import ReplyOwl
+from replyowl import version as replyowl_version
 
+from . import version
 from .jmap import JMAPClientWrapper
 
 
@@ -28,7 +22,7 @@ class Waffles:
         self.client = JMAPClientWrapper(*args, **kwargs)
         self.replyowl = ReplyOwl()
         self.reply_template = reply_template
-        logging.basicConfig()
+        logging.basicConfig(level=logging.INFO)
         log.setLevel(logging.DEBUG if debug else logging.INFO)
 
     def process_mailbox(self, mailbox_name: str, limit: int = 0) -> None:
@@ -40,48 +34,8 @@ class Waffles:
             )
             self._reply_to_email(email)
             self.client.archive_email(email)
-            if i >= limit:
+            if limit and i + 1 >= limit:
                 break
-
-    def _reply_to_email(self, email: Email) -> None:
-        identity = self.client.get_identity_matching_recipients(email)
-        assert isinstance(
-            identity, Identity
-        ), "No identity found matching any recipients"
-        subject = f"Re: {email.subject}"
-        mail_to = self._get_reply_address(email)
-        text_body, html_body = self.replyowl.compose_reply(
-            content=self.reply_template,
-            quote_html=self._get_email_body_html(email),
-            quote_text=self._get_email_body_text(email),
-            quote_attribution=self._reply_attribution_line(email),
-        )
-        assert email.message_id and email.message_id[0]
-        email = Email(
-            mail_from=[EmailAddress(email=identity.email)],
-            to=[EmailAddress(email=mail_to)],
-            subject=subject,
-            body_values=dict(
-                text=EmailBodyValue(value=text_body),
-                html=EmailBodyValue(value=html_body),
-            ),
-            text_body=[EmailBodyPart(part_id="text", type="text/plain")],
-            html_body=[EmailBodyPart(part_id="html", type="text/html")],
-            in_reply_to=email.message_id,
-            references=(email.references or []) + email.message_id,
-            headers=[
-                EmailHeader(
-                    name="User-Agent", value="waffles/0.0.0-dev0 (jmapc)"
-                )
-            ],
-            message_id=[self._make_messageid(identity.email)],
-        )
-        self.client.send_email(email, keep_sent_copy=True)
-
-    def _make_messageid(self, mail_from: str) -> str:
-        dt = datetime.utcnow().isoformat().replace(":", ".").replace("-", ".")
-        dotaddr = re.sub(r"\W", ".", mail_from)
-        return f"{dt}@waffles.dev.example_{dotaddr}"
 
     def _get_email_body_text(self, email: Email) -> Optional[str]:
         if not email.text_body or not email.body_values:
@@ -99,7 +53,34 @@ class Waffles:
             return None
         return email.body_values[html_data.part_id].value
 
-    def _reply_attribution_line(self, email: Email) -> str:
+    def _reply_to_email(self, email: Email) -> None:
+        text_body, html_body = self.replyowl.compose_reply(
+            content=self.reply_template,
+            quote_html=self._get_email_body_html(email),
+            quote_text=self._get_email_body_text(email),
+            quote_attribution=self._quote_attribution_line(email),
+        )
+        assert text_body
+        user_agent = (
+            f"waffles/{version} ("
+            + ", ".join(
+                (
+                    f"jmapc {jmapc_version}",
+                    f"replyowl {replyowl_version}",
+                )
+            )
+            + ")"
+        )
+
+        self.client.send_reply_to_email(
+            email,
+            text_body,
+            html_body,
+            user_agent=user_agent,
+            keep_sent_copy=True,
+        )
+
+    def _quote_attribution_line(self, email: Email) -> str:
         assert email.mail_from and email.mail_from[0]
         mail_from = email.mail_from[0]
         assert email.received_at
@@ -108,14 +89,3 @@ class Waffles:
             "%a %b %-d %Y %H:%M %Z"
         )
         return f"On {timestamp}, {sender} wrote:"
-
-    def _get_reply_address(self, email: Email) -> str:
-        if email.reply_to:
-            assert email.reply_to[0]
-            if email.reply_to[0].email:
-                return email.reply_to[0].email
-        assert email.mail_from
-        assert email.mail_from[0]
-        from_email = email.mail_from[0].email
-        assert from_email
-        return from_email

@@ -51,9 +51,40 @@ def mock_methods(waffles: Waffles) -> Iterable[mock.MagicMock]:
         yield methods_mock
 
 
+def assert_or_debug_calls(
+    call_args_list: mock._CallList, expected_calls: List[mock._Call]
+) -> None:
+    try:
+        assert call_args_list == expected_calls
+    except AssertionError:
+        try:
+            for actual_call, expected_call in zip(
+                [c for c in call_args_list], expected_calls
+            ):
+                if not isinstance(actual_call.args, list):
+                    continue
+                for actual_arg, expected_arg in zip(
+                    actual_call.args, expected_call.args
+                ):
+                    assert actual_arg == expected_arg
+        except Exception:
+            raise
+        raise
+
+
 @pytest.mark.parametrize("dry_run", [True, False], ids=["dry_run", "live"])
+@pytest.mark.parametrize(
+    "original_email_read", [True, False], ids=["read", "unread"]
+)
+@pytest.mark.parametrize(
+    "original_email_in_inbox", [True, False], ids=["in_inbox", "archived"]
+)
 def test_waffles(
-    waffles: Waffles, mock_methods: mock.MagicMock, dry_run: bool
+    waffles: Waffles,
+    mock_methods: mock.MagicMock,
+    dry_run: bool,
+    original_email_read: bool,
+    original_email_in_inbox: bool,
 ) -> None:
     waffles.client.live_mode = not dry_run
     expected_calls: List[mock._Call] = []
@@ -67,11 +98,20 @@ def test_waffles(
         expected_calls.append(make_email_send_call())
     expected_calls.append(make_mailbox_get_call("Inbox"))
     if not dry_run:
-        expected_calls.append(make_email_archive_call())
+        archive_call = make_email_archive_call(
+            is_read=original_email_read,
+            is_in_inbox=original_email_in_inbox,
+        )
+        if archive_call:
+            expected_calls.append(archive_call)
     mock_responses: List[Any] = []
     mock_responses.append(make_mailbox_get_response("MBX50", "pigeonhole"))
     mock_responses.append(make_thread_search_response())
-    mock_responses.append(make_email_get_response())
+    mock_responses.append(
+        make_email_get_response(
+            is_read=original_email_read, is_in_inbox=original_email_in_inbox
+        )
+    )
     mock_responses.append(make_identity_get_response())
     mock_responses.append(make_mailbox_get_response("MBX1002", "Drafts"))
     mock_responses.append(make_mailbox_get_response("MBX1003", "Sent"))
@@ -79,8 +119,14 @@ def test_waffles(
         mock_responses.append(make_email_send_response())
     mock_responses.append(make_mailbox_get_response("MBX1000", "Inbox"))
     if not dry_run:
-        mock_responses.append(make_email_archive_response())
+        archive_response = make_email_archive_response(
+            is_read=original_email_read, is_in_inbox=original_email_in_inbox
+        )
+        if archive_response:
+            mock_responses.append(archive_response)
     mock_methods.side_effect = mock_responses
 
     waffles.process_mailbox("pigeonhole", limit=1)
-    assert mock_methods.call_args_list == expected_calls
+    assert_or_debug_calls(mock_methods.call_args_list, expected_calls)
+    with pytest.raises(StopIteration):
+        mock_methods()

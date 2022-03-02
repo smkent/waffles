@@ -209,7 +209,7 @@ plugins = ["setuptools"]
 
 [[package]]
 name = "jmapc"
-version = "0.1.6"
+version = "0.1.7"
 description = "JMAP client library for Python"
 category = "main"
 optional = false
@@ -441,7 +441,7 @@ six = ">=1.5"
 
 [[package]]
 name = "replyowl"
-version = "0.1.0"
+version = "0.1.1"
 description = "Email reply body generator for HTML and text"
 category = "main"
 optional = false
@@ -593,7 +593,7 @@ testing = ["coverage (>=4)", "coverage-enable-subprocess (>=1)", "flaky (>=3)", 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "115f566471ab8fa42942e7142a5e7fbd0b554b9a05a00ee62e50b701f0954703"
+content-hash = "9cb678f474daf0006d9a5b6dcaf8b2c2f33ae2f7c0a3096b0a2180abba7bdae6"
 
 [metadata.files]
 atomicwrites = [
@@ -729,8 +729,8 @@ isort = [
     {file = "isort-5.10.1.tar.gz", hash = "sha256:e8443a5e7a020e9d7f97f1d7d9cd17c88bcb3bc7e218bf9cf5095fe550be2951"},
 ]
 jmapc = [
-    {file = "jmapc-0.1.6-py3-none-any.whl", hash = "sha256:3f79bbbc089dce8d21c68a9afbb692e433d608ba7d034c272a2a2d8998877c64"},
-    {file = "jmapc-0.1.6.tar.gz", hash = "sha256:2fb4e95c5fa98eeedf172e87a9a0c27be076c67f626b24435a0bfe03bd93d60d"},
+    {file = "jmapc-0.1.7-py3-none-any.whl", hash = "sha256:c73eaeac472dc02f6d05f45d01998cb8a41f04c5c9b1bbbe3a48849c05765d16"},
+    {file = "jmapc-0.1.7.tar.gz", hash = "sha256:f40443df2ad27537e9c58441572955a72a29f7b9e52b4b01d64943a669b47e23"},
 ]
 marshmallow = [
     {file = "marshmallow-3.14.1-py3-none-any.whl", hash = "sha256:04438610bc6dadbdddb22a4a55bcc7f6f8099e69580b2e67f5a681933a1f4400"},
@@ -826,8 +826,8 @@ python-dateutil = [
     {file = "python_dateutil-2.8.2-py2.py3-none-any.whl", hash = "sha256:961d03dc3453ebbc59dbdea9e4e11c5651520a876d0f4db161e8674aae935da9"},
 ]
 replyowl = [
-    {file = "replyowl-0.1.0-py3-none-any.whl", hash = "sha256:26cebabf4aea0786ed4d07d9bf27c6a409a08aaada7cbdcbabeb81cc8a170856"},
-    {file = "replyowl-0.1.0.tar.gz", hash = "sha256:bb1ce2d73ae103e9c9b2d36cb0c971af42caf81b3d98e05d73ff72281b977444"},
+    {file = "replyowl-0.1.1-py3-none-any.whl", hash = "sha256:0ba8337c0ba16b2e1711aa0191fbb7172c47caae905ebe1d5f6fc1a29f121406"},
+    {file = "replyowl-0.1.1.tar.gz", hash = "sha256:9a5bf6977e9b051ad329dcec8b0ee0b3f7e8e1b83e130c44126f48ab2ebeb52e"},
 ]
 requests = [
     {file = "requests-2.27.1-py2.py3-none-any.whl", hash = "sha256:f22fa1e554c9ddfd16e6e41ac79759e17be9e492b3587efa038054674760e72d"},

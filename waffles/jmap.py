@@ -1,5 +1,7 @@
 import functools
 import json
+import logging
+import re
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
@@ -8,6 +10,10 @@ from jmapc import (
     Address,
     Comparator,
     Email,
+    EmailAddress,
+    EmailBodyPart,
+    EmailBodyValue,
+    EmailHeader,
     EmailQueryFilterCondition,
     EmailSubmission,
     Envelope,
@@ -169,18 +175,71 @@ class JMAPClientWrapper(jmapc.Client):
             return
         inbox = self.mailbox_by_name(self.inbox_name)
         assert isinstance(inbox, Mailbox)
-        if not email.mailbox_ids:
+        updates: Dict[str, Optional[bool]] = {}
+        if not email.keywords or "$seen" not in email.keywords:
+            updates["keywords/$seen"] = True
+        if email.mailbox_ids and inbox.id in email.mailbox_ids:
+            updates[f"mailboxIds/{inbox.id}"] = None
+        if not updates:
             return
-        if inbox.id in email.mailbox_ids:
-            method = EmailSet(
-                update={email.id: {f"mailboxIds/{inbox.id}": None}}
-            )
-            if not self.live_mode:
-                print("<<<<<<<<<<")
-                print(json.dumps(method.to_dict(), indent=4, sort_keys=True))
-                print(">>>>>>>>>>")
-                return
-            self.method_call(method)
+        method = EmailSet(update={email.id: updates})
+        if not self.live_mode:
+            print("<<<<<<<<<<")
+            print(json.dumps(method.to_dict(), indent=4, sort_keys=True))
+            print(">>>>>>>>>>")
+            return
+        self.method_call(method)
+
+    def _get_reply_address(self, email: Email) -> str:
+        if email.reply_to:
+            assert email.reply_to[0]
+            if email.reply_to[0].email:
+                return email.reply_to[0].email
+        assert email.mail_from
+        assert email.mail_from[0]
+        from_email = email.mail_from[0].email
+        assert from_email
+        return from_email
+
+    def _make_messageid(self, mail_from: str) -> str:
+        dt = datetime.utcnow().isoformat().replace(":", ".").replace("-", ".")
+        dotaddr = re.sub(r"\W", ".", mail_from)
+        return f"{dt}@waffles.dev.example_{dotaddr}"
+
+    def send_reply_to_email(
+        self,
+        email: Email,
+        text_body: str,
+        html_body: Optional[str] = None,
+        user_agent: Optional[str] = None,
+        keep_sent_copy: bool = True,
+    ) -> Optional[EmailSubmission]:
+        identity = self.get_identity_matching_recipients(email)
+        assert isinstance(
+            identity, Identity
+        ), "No identity found matching any recipients"
+        mail_to = self._get_reply_address(email)
+        assert email.message_id and email.message_id[0]
+        headers: List[EmailHeader] = []
+        if user_agent:
+            headers.append(EmailHeader(name="User-Agent", value=user_agent))
+
+        reply_email = Email(
+            mail_from=[EmailAddress(email=identity.email)],
+            to=[EmailAddress(email=mail_to)],
+            subject=f"Re: {email.subject}",
+            body_values=dict(
+                text=EmailBodyValue(value=text_body),
+                html=EmailBodyValue(value=html_body),
+            ),
+            text_body=[EmailBodyPart(part_id="text", type="text/plain")],
+            html_body=[EmailBodyPart(part_id="html", type="text/html")],
+            in_reply_to=email.message_id,
+            references=(email.references or []) + email.message_id,
+            headers=headers,
+            message_id=[self._make_messageid(identity.email)],
+        )
+        return self.send_email(reply_email, keep_sent_copy=keep_sent_copy)
 
     def send_email(
         self, email: Email, keep_sent_copy: bool = True
@@ -222,6 +281,7 @@ class JMAPClientWrapper(jmapc.Client):
             email_submission_method.on_success_update_email = {
                 "#emailToSend": {
                     "keywords/$draft": None,
+                    "keywords/$seen": True,
                     f"mailboxIds/{drafts_mailbox.id}": None,
                     f"mailboxIds/{sent_mailbox.id}": True,
                 }
@@ -249,6 +309,11 @@ class JMAPClientWrapper(jmapc.Client):
         assert email_send_result.created["emailToSend"]
         sent_data = email_send_result.created["emailToSend"]
 
-        # Print sent email timestamp
-        print(f"Email sent at {sent_data.send_at}")
+        # Print sent email info
+        logging.info(
+            'Reply for "{}" sent to {}'.format(
+                email.subject,
+                ", ".join([to.email for to in email.to if to.email]),
+            )
+        )
         return sent_data

@@ -1,6 +1,5 @@
-# import logging
 from datetime import datetime, timezone
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 from unittest import mock
 
 from jmapc import (
@@ -20,6 +19,7 @@ from jmapc import (
     ResultReference,
     Thread,
 )
+from jmapc import version as jmapc_version
 from jmapc.methods import (
     EmailGet,
     EmailGetResponse,
@@ -35,6 +35,9 @@ from jmapc.methods import (
     ThreadGet,
     ThreadGetResponse,
 )
+from replyowl import version as replyowl_version
+
+local_tz_abbrev = datetime(1994, 8, 24, 12, 1, 2).astimezone().strftime("%Z")
 
 
 def make_identity_get_response() -> IdentityGetResponse:
@@ -170,7 +173,12 @@ def make_email_get_call() -> mock._Call:
     )
 
 
-def make_email_get_response() -> EmailGetResponse:
+def make_email_get_response(
+    is_read: bool, is_in_inbox: bool
+) -> EmailGetResponse:
+    mailbox_ids = {"MBX2187": True}
+    if is_in_inbox:
+        mailbox_ids["MBX1000"] = True
     return EmailGetResponse(
         account_id="u1138",
         state="2187",
@@ -188,7 +196,14 @@ def make_email_get_response() -> EmailGetResponse:
                 subject="Day Trip to Happy Happy Village",
                 message_id=["first@ness.onett.example.com"],
                 received_at=datetime.now().astimezone(timezone.utc),
-                mailbox_ids={"MBX1000": True},
+                mailbox_ids=mailbox_ids,
+                keywords={"$seen": True} if is_read else None,
+                text_body=[EmailBodyPart(part_id="1", type="text/plain")],
+                html_body=[EmailBodyPart(part_id="2", type="text/html")],
+                body_values={
+                    "1": EmailBodyValue(value="plain_text"),
+                    "2": EmailBodyValue(value="<b>html</b> text"),
+                },
             ),
         ],
     )
@@ -208,17 +223,30 @@ def make_email_send_call() -> mock._Call:
                         body_values=dict(
                             text=EmailBodyValue(
                                 value=(
-                                    "**Hi there**. I'm a _test_ "
-                                    "message for unit testing.  \n\n"
+                                    "**Hi there**. I'm a _test_ message "
+                                    "for unit testing.  \n\n----\n\n"
+                                    "On Wed Aug 24 1994 12:01 "
+                                    f"{local_tz_abbrev}, Paula "
+                                    "<paula@twoson.example.com> wrote:\n\n"
+                                    "> plain_text"
                                 )
                             ),
                             html=EmailBodyValue(
                                 value=(
                                     "<!DOCTYPE html>\n<html><head>"
                                     "<title></title></head><body>"
-                                    "<b>Hi there</b>. I'm a "
-                                    "<i>test</i> message for "
-                                    "unit testing.<br/></body></html>"
+                                    "<b>Hi there</b>. I'm a <i>test</i> "
+                                    "message for unit testing.<br/><div>"
+                                    "On Wed Aug 24 1994 12:01 "
+                                    f"{local_tz_abbrev}, Paula "
+                                    "&lt;paula@twoson.example.com&gt; wrote:"
+                                    "<br/></div><blockquote "
+                                    'style="margin-left: 0.8ex; '
+                                    "padding-left: 2ex; "
+                                    "border-left: 2px solid #aaa; "
+                                    'border-radius: 8px;" type="cite">'
+                                    "<b>html</b> text"
+                                    "</blockquote></body></html>"
                                 )
                             ),
                         ),
@@ -233,7 +261,11 @@ def make_email_send_call() -> mock._Call:
                         headers=[
                             EmailHeader(
                                 name="User-Agent",
-                                value="waffles/0.0.0-dev0 (jmapc)",
+                                value=(
+                                    "waffles/0.0.0 "
+                                    f"(jmapc {jmapc_version}, "
+                                    f"replyowl {replyowl_version})"
+                                ),
                             )
                         ],
                         message_id=[
@@ -270,6 +302,7 @@ def make_email_send_call() -> mock._Call:
                 on_success_update_email={
                     "#emailToSend": {
                         "keywords/$draft": None,
+                        "keywords/$seen": True,
                         "mailboxIds/MBX1002": None,
                         "mailboxIds/MBX1003": True,
                     }
@@ -305,13 +338,24 @@ def make_email_send_response() -> List[
     ]
 
 
-def make_email_archive_call() -> mock._Call:
-    return mock.call(
-        EmailSet(update={"Mdeadbeef": {"mailboxIds/MBX1000": None}})
-    )
+def make_email_archive_call(
+    is_read: bool, is_in_inbox: bool
+) -> Optional[mock._Call]:
+    updates: Dict[str, Optional[bool]] = {}
+    if not is_read:
+        updates["keywords/$seen"] = True
+    if is_in_inbox:
+        updates["mailboxIds/MBX1000"] = None
+    if not updates:
+        return None
+    return mock.call(EmailSet(update={"Mdeadbeef": updates}))
 
 
-def make_email_archive_response() -> EmailSetResponse:
+def make_email_archive_response(
+    is_read: bool, is_in_inbox: bool
+) -> Optional[EmailSetResponse]:
+    if is_read and not is_in_inbox:
+        return None
     return EmailSetResponse(
         account_id="u1138",
         old_state="3000",
