@@ -194,6 +194,12 @@ def make_email_get_response(
                 received_at=datetime.now().astimezone(timezone.utc),
                 mailbox_ids=mailbox_ids,
                 keywords={"$seen": True} if is_read else None,
+                text_body=[EmailBodyPart(part_id="1", type="text/plain")],
+                html_body=[EmailBodyPart(part_id="2", type="text/html")],
+                body_values={
+                    "1": EmailBodyValue(value="plain_text"),
+                    "2": EmailBodyValue(value="<b>html</b> text"),
+                },
             ),
         ],
     )
@@ -213,17 +219,28 @@ def make_email_send_call() -> mock._Call:
                         body_values=dict(
                             text=EmailBodyValue(
                                 value=(
-                                    "**Hi there**. I'm a _test_ "
-                                    "message for unit testing.  \n\n"
+                                    "**Hi there**. I'm a _test_ message "
+                                    "for unit testing.  \n\n----\n\n"
+                                    "On Wed Aug 24 1994 12:01 PDT, Paula "
+                                    "<paula@twoson.example.com> wrote:\n\n"
+                                    "> plain_text"
                                 )
                             ),
                             html=EmailBodyValue(
                                 value=(
                                     "<!DOCTYPE html>\n<html><head>"
                                     "<title></title></head><body>"
-                                    "<b>Hi there</b>. I'm a "
-                                    "<i>test</i> message for "
-                                    "unit testing.<br/></body></html>"
+                                    "<b>Hi there</b>. I'm a <i>test</i> "
+                                    "message for unit testing.<br/><div>"
+                                    "On Wed Aug 24 1994 12:01 PDT, Paula "
+                                    "&lt;paula@twoson.example.com&gt; wrote:"
+                                    "<br/></div><blockquote "
+                                    'style="margin-left: 0.8ex; '
+                                    "padding-left: 2ex; "
+                                    "border-left: 2px solid #aaa; "
+                                    'border-radius: 8px;" type="cite">'
+                                    "<b>html</b> text"
+                                    "</blockquote></body></html>"
                                 )
                             ),
                         ),
