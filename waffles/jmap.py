@@ -170,18 +170,16 @@ class JMAPClientWrapper(jmapc.Client):
             return
         inbox = self.mailbox_by_name(self.inbox_name)
         assert isinstance(inbox, Mailbox)
-        if not email.mailbox_ids:
+        updates: Dict[str, Optional[bool]] = {"keywords/$seen": True}
+        if email.mailbox_ids and inbox.id in email.mailbox_ids:
+            updates[f"mailboxIds/{inbox.id}"] = None
+        method = EmailSet(update={email.id: updates})
+        if not self.live_mode:
+            print("<<<<<<<<<<")
+            print(json.dumps(method.to_dict(), indent=4, sort_keys=True))
+            print(">>>>>>>>>>")
             return
-        if inbox.id in email.mailbox_ids:
-            method = EmailSet(
-                update={email.id: {f"mailboxIds/{inbox.id}": None}}
-            )
-            if not self.live_mode:
-                print("<<<<<<<<<<")
-                print(json.dumps(method.to_dict(), indent=4, sort_keys=True))
-                print(">>>>>>>>>>")
-                return
-            self.method_call(method)
+        self.method_call(method)
 
     def send_email(
         self, email: Email, keep_sent_copy: bool = True
@@ -223,6 +221,7 @@ class JMAPClientWrapper(jmapc.Client):
             email_submission_method.on_success_update_email = {
                 "#emailToSend": {
                     "keywords/$draft": None,
+                    "keywords/$seen": True,
                     f"mailboxIds/{drafts_mailbox.id}": None,
                     f"mailboxIds/{sent_mailbox.id}": True,
                 }
@@ -253,7 +252,8 @@ class JMAPClientWrapper(jmapc.Client):
         # Print sent email info
         logging.info(
             'Reply for "{}" sent to {}'.format(
-                email.subject, ", ".join([to.email for to in email.to])
+                email.subject,
+                ", ".join([to.email for to in email.to if to.email]),
             )
         )
         return sent_data

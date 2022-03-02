@@ -270,6 +270,7 @@ def make_email_send_call() -> mock._Call:
                 on_success_update_email={
                     "#emailToSend": {
                         "keywords/$draft": None,
+                        "keywords/$seen": True,
                         "mailboxIds/MBX1002": None,
                         "mailboxIds/MBX1003": True,
                     }
@@ -307,7 +308,14 @@ def make_email_send_response() -> List[
 
 def make_email_archive_call() -> mock._Call:
     return mock.call(
-        EmailSet(update={"Mdeadbeef": {"mailboxIds/MBX1000": None}})
+        EmailSet(
+            update={
+                "Mdeadbeef": {
+                    "keywords/$seen": True,
+                    "mailboxIds/MBX1000": None,
+                }
+            }
+        )
     )
 
 
