@@ -75,14 +75,14 @@ Prerequisites: [Poetry][poetry]
 Created from [smkent/cookie-python][cookie-python] using
 [cookiecutter][cookiecutter]
 
-[codecov]: https://codecov.io/gh/smkent/wafflesbot
+[codecov]: https://codecov.io/gh/smkent/waffles
 [cookie-python]: https://github.com/smkent/cookie-python
 [cookiecutter]: https://github.com/cookiecutter/cookiecutter
 [fastmail]: https://fastmail.com
-[gh-actions]: https://github.com/smkent/wafflesbot/actions?query=branch%3Amaster
+[gh-actions]: https://github.com/smkent/waffles/actions?query=branch%3Amaster
 [jmap]: https://jmap.io
 [jmapc]: https://github.com/smkent/jmapc
 [poetry]: https://python-poetry.org/docs/#installation
 [pypi]: https://pypi.org/project/wafflesbot/
 [replyowl]: https://github.com/smkent/replyowl
-[repo]: https://github.com/smkent/wafflesbot
+[repo]: https://github.com/smkent/waffles
