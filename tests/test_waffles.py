@@ -72,9 +72,7 @@ def test_waffles(
 ) -> None:
     waffles.client.live_mode = not dry_run
     mock_responses: List[Any] = []
-    mock_responses.append(
-        [("0", None), ("1", make_mailbox_get_response("MBX50", "pigeonhole"))]
-    )
+    mock_responses.append(make_mailbox_get_response("MBX50", "pigeonhole"))
     mock_responses.append(
         [
             ("0", None),
@@ -142,12 +140,8 @@ def test_waffles(
             ],
         )
     )
-    mock_responses.append(
-        [("0", None), ("1", make_mailbox_get_response("MBX1002", "Drafts"))]
-    )
-    mock_responses.append(
-        [("0", None), ("1", make_mailbox_get_response("MBX1003", "Sent"))]
-    )
+    mock_responses.append(make_mailbox_get_response("MBX1002", "Drafts"))
+    mock_responses.append(make_mailbox_get_response("MBX1003", "Sent"))
     if not dry_run:
         mock_responses.append(
             [
@@ -172,9 +166,7 @@ def test_waffles(
                 ),
             ],
         )
-    mock_responses.append(
-        [("0", None), ("1", make_mailbox_get_response("MBX1000", "Inbox"))]
-    )
+    mock_responses.append(make_mailbox_get_response("MBX1000", "Inbox"))
 
     expected_calls: List[mock._Call] = []
     expected_calls.append(make_mailbox_get_call("pigeonhole"))

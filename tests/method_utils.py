@@ -1,4 +1,5 @@
 # import logging
+from typing import List, Optional, Tuple
 from unittest import mock
 
 from jmapc import Mailbox, MailboxQueryFilterCondition, ResultReference
@@ -24,21 +25,29 @@ def make_mailbox_get_call(name: str) -> mock._Call:
     )
 
 
-def make_mailbox_get_response(id: str, name: str) -> MailboxGetResponse:
-    return MailboxGetResponse(
-        account_id="u1138",
-        state="2187",
-        not_found=[],
-        data=[
-            Mailbox(
-                id=id,
-                sort_order=50,
-                total_emails=100,
-                unread_emails=50,
-                total_threads=40,
-                unread_threads=3,
-                is_subscribed=True,
-                name=name,
-            )
-        ],
-    )
+def make_mailbox_get_response(
+    id: str, name: str
+) -> List[Tuple[str, Optional[MailboxGetResponse]]]:
+    return [
+        ("0", None),
+        (
+            "1",
+            MailboxGetResponse(
+                account_id="u1138",
+                state="2187",
+                not_found=[],
+                data=[
+                    Mailbox(
+                        id=id,
+                        sort_order=50,
+                        total_emails=100,
+                        unread_emails=50,
+                        total_threads=40,
+                        unread_threads=3,
+                        is_subscribed=True,
+                        name=name,
+                    )
+                ],
+            ),
+        ),
+    ]
