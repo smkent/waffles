@@ -54,7 +54,7 @@ class Waffles:
             content=self.reply_template,
             quote_html=self._get_email_body_html(email),
             quote_text=self._get_email_body_text(email),
-            quote_attribution=self._reply_attribution_line(email),
+            quote_attribution=self._quote_attribution_line(email),
         )
         assert email.message_id and email.message_id[0]
         email = Email(
@@ -99,7 +99,7 @@ class Waffles:
             return None
         return email.body_values[html_data.part_id].value
 
-    def _reply_attribution_line(self, email: Email) -> str:
+    def _quote_attribution_line(self, email: Email) -> str:
         assert email.mail_from and email.mail_from[0]
         mail_from = email.mail_from[0]
         assert email.received_at
