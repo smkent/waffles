@@ -2,9 +2,9 @@
 
 [![PyPI](https://img.shields.io/pypi/v/wafflesbot)][pypi]
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/wafflesbot)][pypi]
-[![Build](https://img.shields.io/github/checks-status/smkent/wafflesbot/master?label=build)][gh-actions]
-[![codecov](https://codecov.io/gh/smkent/wafflesbot/branch/master/graph/badge.svg)][codecov]
-[![GitHub stars](https://img.shields.io/github/stars/smkent/wafflesbot?style=social)][repo]
+[![Build](https://img.shields.io/github/checks-status/smkent/waffles/master?label=build)][gh-actions]
+[![codecov](https://codecov.io/gh/smkent/waffles/branch/master/graph/badge.svg)][codecov]
+[![GitHub stars](https://img.shields.io/github/stars/smkent/waffles?style=social)][repo]
 
 wafflesbot sends form replies to unreplied emails in a [JMAP][jmap] mailbox
 (such as [Fastmail][fastmail]).
