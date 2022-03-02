@@ -34,6 +34,7 @@ def waffles() -> Iterable[Waffles]:
             user="ness",
             password="pk_fire",
             reply_template=REPLY_TEMPLATE,
+            newer_than_days=7,
         )
 
 

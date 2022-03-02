@@ -114,7 +114,7 @@ def make_thread_search_call() -> mock._Call:
                 collapse_threads=True,
                 filter=EmailQueryFilterCondition(
                     in_mailbox="MBX50",
-                    after=datetime(1993, 8, 24, 12, 1, 2, tzinfo=timezone.utc),
+                    after=datetime(1994, 8, 17, 12, 1, 2, tzinfo=timezone.utc),
                 ),
                 sort=[Comparator(property="receivedAt", is_ascending=False)],
                 limit=10,
