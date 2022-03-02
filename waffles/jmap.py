@@ -1,5 +1,6 @@
 import functools
 import json
+import logging
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
@@ -249,6 +250,10 @@ class JMAPClientWrapper(jmapc.Client):
         assert email_send_result.created["emailToSend"]
         sent_data = email_send_result.created["emailToSend"]
 
-        # Print sent email timestamp
-        print(f"Email sent at {sent_data.send_at}")
+        # Print sent email info
+        logging.info(
+            'Reply for "{}" sent to {}'.format(
+                email.subject, ", ".join([to.email for to in email.to])
+            )
+        )
         return sent_data

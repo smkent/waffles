@@ -28,7 +28,7 @@ class Waffles:
         self.client = JMAPClientWrapper(*args, **kwargs)
         self.replyowl = ReplyOwl()
         self.reply_template = reply_template
-        logging.basicConfig()
+        logging.basicConfig(level=logging.INFO)
         log.setLevel(logging.DEBUG if debug else logging.INFO)
 
     def process_mailbox(self, mailbox_name: str, limit: int = 0) -> None:
