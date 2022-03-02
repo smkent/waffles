@@ -170,9 +170,13 @@ class JMAPClientWrapper(jmapc.Client):
             return
         inbox = self.mailbox_by_name(self.inbox_name)
         assert isinstance(inbox, Mailbox)
-        updates: Dict[str, Optional[bool]] = {"keywords/$seen": True}
+        updates: Dict[str, Optional[bool]] = {}
+        if not email.keywords or "$seen" not in email.keywords:
+            updates["keywords/$seen"] = True
         if email.mailbox_ids and inbox.id in email.mailbox_ids:
             updates[f"mailboxIds/{inbox.id}"] = None
+        if not updates:
+            return
         method = EmailSet(update={email.id: updates})
         if not self.live_mode:
             print("<<<<<<<<<<")

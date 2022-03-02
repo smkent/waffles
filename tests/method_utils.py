@@ -1,6 +1,5 @@
-# import logging
 from datetime import datetime, timezone
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 from unittest import mock
 
 from jmapc import (
@@ -170,7 +169,12 @@ def make_email_get_call() -> mock._Call:
     )
 
 
-def make_email_get_response() -> EmailGetResponse:
+def make_email_get_response(
+    is_read: bool, is_in_inbox: bool
+) -> EmailGetResponse:
+    mailbox_ids = {"MBX2187": True}
+    if is_in_inbox:
+        mailbox_ids["MBX1000"] = True
     return EmailGetResponse(
         account_id="u1138",
         state="2187",
@@ -188,7 +192,8 @@ def make_email_get_response() -> EmailGetResponse:
                 subject="Day Trip to Happy Happy Village",
                 message_id=["first@ness.onett.example.com"],
                 received_at=datetime.now().astimezone(timezone.utc),
-                mailbox_ids={"MBX1000": True},
+                mailbox_ids=mailbox_ids,
+                keywords={"$seen": True} if is_read else None,
             ),
         ],
     )
@@ -306,20 +311,24 @@ def make_email_send_response() -> List[
     ]
 
 
-def make_email_archive_call() -> mock._Call:
-    return mock.call(
-        EmailSet(
-            update={
-                "Mdeadbeef": {
-                    "keywords/$seen": True,
-                    "mailboxIds/MBX1000": None,
-                }
-            }
-        )
-    )
+def make_email_archive_call(
+    is_read: bool, is_in_inbox: bool
+) -> Optional[mock._Call]:
+    updates: Dict[str, Optional[bool]] = {}
+    if not is_read:
+        updates["keywords/$seen"] = True
+    if is_in_inbox:
+        updates["mailboxIds/MBX1000"] = None
+    if not updates:
+        return None
+    return mock.call(EmailSet(update={"Mdeadbeef": updates}))
 
 
-def make_email_archive_response() -> EmailSetResponse:
+def make_email_archive_response(
+    is_read: bool, is_in_inbox: bool
+) -> Optional[EmailSetResponse]:
+    if is_read and not is_in_inbox:
+        return None
     return EmailSetResponse(
         account_id="u1138",
         old_state="3000",
