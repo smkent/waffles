@@ -39,6 +39,8 @@ from jmapc.methods import (
     ThreadGetResponse,
 )
 
+from . import version
+
 
 class JMAPClientWrapper(jmapc.Client):
     THREADS_GET_LIMIT = 10
@@ -233,7 +235,7 @@ class JMAPClientWrapper(jmapc.Client):
             references=(email.references or []) + email.message_id,
             headers=[
                 EmailHeader(
-                    name="User-Agent", value="waffles/0.0.0-dev0 (jmapc)"
+                    name="User-Agent", value=f"waffles/{version} (jmapc)"
                 )
             ],
             message_id=[self._make_messageid(identity.email)],

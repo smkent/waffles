@@ -259,7 +259,7 @@ def make_email_send_call() -> mock._Call:
                         headers=[
                             EmailHeader(
                                 name="User-Agent",
-                                value="waffles/0.0.0-dev0 (jmapc)",
+                                value="waffles/0.0.0 (jmapc)",
                             )
                         ],
                         message_id=[
