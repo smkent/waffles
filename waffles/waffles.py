@@ -38,62 +38,25 @@ class Waffles:
                 f"[{email.received_at}] FROM {email.mail_from}: "
                 f"{email.subject}"
             )
-            self.reply_to_email(email)
+            self._reply_to_email(email)
             self.client.archive_email(email)
             if i >= limit:
                 break
 
-    def _msgid(self, mail_from: str) -> str:
-        dt = datetime.utcnow().isoformat().replace(":", ".").replace("-", ".")
-        dotaddr = re.sub(r"\W", ".", mail_from)
-        return f"{dt}@waffles.dev.example_{dotaddr}"
-
-    def get_email_body_text(self, email: Email) -> Optional[str]:
-        if not email.text_body or not email.body_values:
-            return None
-        text_data = email.text_body[0]
-        if not text_data or not text_data.part_id:
-            return None
-        return email.body_values[text_data.part_id].value
-
-    def get_email_body_html(self, email: Email) -> Optional[str]:
-        if not email.html_body or not email.body_values:
-            return None
-        html_data = email.html_body[0]
-        if not html_data or not html_data.part_id:
-            return None
-        return email.body_values[html_data.part_id].value
-
-    def reply_attribution_line(self, email: Email) -> str:
-        assert email.mail_from and email.mail_from[0]
-        mail_from = email.mail_from[0]
-        assert email.received_at
-        sender = f"{mail_from.name or ''} <{mail_from.email}>".strip()
-        timestamp = email.received_at.astimezone().strftime(
-            "%a %b %-d %Y %H:%M %Z"
-        )
-        return f"On {timestamp}, {sender} wrote:"
-
-    def reply_to_email(self, email: Email) -> None:
+    def _reply_to_email(self, email: Email) -> None:
         identity = self.client.get_identity_matching_recipients(email)
         assert isinstance(
             identity, Identity
         ), "No identity found matching any recipients"
         subject = f"Re: {email.subject}"
-        assert email.mail_from and email.mail_from[0]
-        if email.reply_to:
-            assert email.reply_to[0]
-            mail_to = email.reply_to[0].email
-        else:
-            mail_to = email.mail_from[0].email
+        mail_to = self._get_reply_address(email)
         text_body, html_body = self.replyowl.compose_reply(
             content=self.reply_template,
-            quote_html=self.get_email_body_html(email),
-            quote_text=self.get_email_body_text(email),
-            quote_attribution=self.reply_attribution_line(email),
+            quote_html=self._get_email_body_html(email),
+            quote_text=self._get_email_body_text(email),
+            quote_attribution=self._reply_attribution_line(email),
         )
         assert email.message_id and email.message_id[0]
-
         email = Email(
             mail_from=[EmailAddress(email=identity.email)],
             to=[EmailAddress(email=mail_to)],
@@ -111,6 +74,48 @@ class Waffles:
                     name="User-Agent", value="waffles/0.0.0-dev0 (jmapc)"
                 )
             ],
-            message_id=[self._msgid(identity.email)],
+            message_id=[self._make_messageid(identity.email)],
         )
         self.client.send_email(email, keep_sent_copy=True)
+
+    def _make_messageid(self, mail_from: str) -> str:
+        dt = datetime.utcnow().isoformat().replace(":", ".").replace("-", ".")
+        dotaddr = re.sub(r"\W", ".", mail_from)
+        return f"{dt}@waffles.dev.example_{dotaddr}"
+
+    def _get_email_body_text(self, email: Email) -> Optional[str]:
+        if not email.text_body or not email.body_values:
+            return None
+        text_data = email.text_body[0]
+        if not text_data or not text_data.part_id:
+            return None
+        return email.body_values[text_data.part_id].value
+
+    def _get_email_body_html(self, email: Email) -> Optional[str]:
+        if not email.html_body or not email.body_values:
+            return None
+        html_data = email.html_body[0]
+        if not html_data or not html_data.part_id:
+            return None
+        return email.body_values[html_data.part_id].value
+
+    def _reply_attribution_line(self, email: Email) -> str:
+        assert email.mail_from and email.mail_from[0]
+        mail_from = email.mail_from[0]
+        assert email.received_at
+        sender = f"{mail_from.name or ''} <{mail_from.email}>".strip()
+        timestamp = email.received_at.astimezone().strftime(
+            "%a %b %-d %Y %H:%M %Z"
+        )
+        return f"On {timestamp}, {sender} wrote:"
+
+    def _get_reply_address(self, email: Email) -> str:
+        if email.reply_to:
+            assert email.reply_to[0]
+            if email.reply_to[0].email:
+                return email.reply_to[0].email
+        assert email.mail_from
+        assert email.mail_from[0]
+        from_email = email.mail_from[0].email
+        assert from_email
+        return from_email
