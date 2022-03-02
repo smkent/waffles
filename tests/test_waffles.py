@@ -51,6 +51,27 @@ def mock_methods(waffles: Waffles) -> Iterable[mock.MagicMock]:
         yield methods_mock
 
 
+def assert_or_debug_calls(
+    call_args_list: mock._CallList, expected_calls: List[mock._Call]
+) -> None:
+    try:
+        assert call_args_list == expected_calls
+    except AssertionError:
+        try:
+            for actual_call, expected_call in zip(
+                [c for c in call_args_list], expected_calls
+            ):
+                if not isinstance(actual_call.args, list):
+                    continue
+                for actual_arg, expected_arg in zip(
+                    actual_call.args, expected_call.args
+                ):
+                    assert actual_arg == expected_arg
+        except Exception:
+            raise
+        raise
+
+
 @pytest.mark.parametrize("dry_run", [True, False], ids=["dry_run", "live"])
 def test_waffles(
     waffles: Waffles, mock_methods: mock.MagicMock, dry_run: bool
@@ -83,4 +104,4 @@ def test_waffles(
     mock_methods.side_effect = mock_responses
 
     waffles.process_mailbox("pigeonhole", limit=1)
-    assert mock_methods.call_args_list == expected_calls
+    assert_or_debug_calls(mock_methods.call_args_list, expected_calls)
