@@ -6,6 +6,8 @@
 [![codecov](https://codecov.io/gh/smkent/waffles/branch/master/graph/badge.svg)][codecov]
 [![GitHub stars](https://img.shields.io/github/stars/smkent/waffles?style=social)][repo]
 
+[![wafflesbot][logo]](#)
+
 wafflesbot sends form replies to unreplied emails in a [JMAP][jmap] mailbox
 (such as [Fastmail][fastmail]).
 
@@ -82,6 +84,7 @@ Created from [smkent/cookie-python][cookie-python] using
 [gh-actions]: https://github.com/smkent/waffles/actions?query=branch%3Amaster
 [jmap]: https://jmap.io
 [jmapc]: https://github.com/smkent/jmapc
+[logo]: https://raw.github.com/smkent/waffles/master/img/waffles.png
 [poetry]: https://python-poetry.org/docs/#installation
 [pypi]: https://pypi.org/project/wafflesbot/
 [replyowl]: https://github.com/smkent/replyowl
