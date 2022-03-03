@@ -1,4 +1,5 @@
 import logging
+import time
 from datetime import timedelta
 from typing import Any, Optional
 
@@ -25,7 +26,7 @@ class Waffles:
         self.replyowl = ReplyOwl()
         self.reply_content = reply_content
         self.newer_than_days = newer_than_days
-        logging.basicConfig(level=logging.INFO)
+        self._setup_logging()
         log.setLevel(logging.DEBUG if debug else logging.INFO)
 
     def process_mailbox(self, mailbox_name: str, limit: int = 0) -> None:
@@ -44,6 +45,20 @@ class Waffles:
             self.client.archive_email(email)
             if limit and i + 1 >= limit:
                 break
+
+    def _setup_logging(self) -> None:
+        class UTCFormatter(logging.Formatter):
+            converter = time.gmtime
+
+        logger = logging.getLogger()
+        handler = logging.StreamHandler()
+        formatter = UTCFormatter(
+            "%(asctime)s %(name)-12s %(levelname)-8s "
+            "[%(filename)s:%(funcName)s:%(lineno)d] %(message)s"
+        )
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+        log.setLevel(logging.INFO)
 
     def _get_email_body_text(self, email: Email) -> Optional[str]:
         if not email.text_body or not email.body_values:
