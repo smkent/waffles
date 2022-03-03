@@ -271,8 +271,7 @@ def make_email_send_call() -> mock._Call:
                         message_id=[
                             (
                                 "1994.08.24T12.01.02"
-                                "@wafflesbot.dev.example"
-                                "_ness.onett.example.com"
+                                "@wafflesbot.ness.onett.example.com"
                             )
                         ],
                         keywords={"$draft": True},
