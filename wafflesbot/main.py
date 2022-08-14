@@ -76,4 +76,4 @@ def main() -> None:
         reply_content=args.reply_content.read(),
         newer_than_days=args.newer_than_days,
     )
-    w.process_mailbox(args.mailbox, limit=args.limit)
+    w.run(args.mailbox, limit=args.limit)

@@ -25,7 +25,7 @@ class Waffles:
         self._setup_logging()
         log.setLevel(logging.DEBUG if debug else logging.INFO)
 
-    def process_mailbox(self, mailbox_name: str, limit: int = 0) -> None:
+    def run(self, mailbox_name: str, limit: int = 0) -> None:
         since: Optional[timedelta] = None
         if self.newer_than_days:
             since = timedelta(days=self.newer_than_days)
