@@ -22,7 +22,7 @@ class Waffles:
         debug: bool = False,
         **kwargs: Any,
     ):
-        self.client = JMAPClientWrapper(*args, **kwargs)
+        self.client = JMAPClientWrapper.create_with_api_token(*args, **kwargs)
         self.replyowl = ReplyOwl()
         self.reply_content = reply_content
         self.newer_than_days = newer_than_days

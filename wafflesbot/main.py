@@ -71,8 +71,7 @@ def main() -> None:
     w = Waffles(
         debug=args.debug,
         host=os.environ["JMAP_HOST"],
-        user=os.environ["JMAP_USER"],
-        password=os.environ["JMAP_PASSWORD"],
+        api_token=os.environ["JMAP_API_TOKEN"],
         live_mode=not args.dry_run,
         reply_content=args.reply_content.read(),
         newer_than_days=args.newer_than_days,

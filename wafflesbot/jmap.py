@@ -20,7 +20,7 @@ from jmapc import (
     Identity,
     Mailbox,
     MailboxQueryFilterCondition,
-    ResultReference,
+    Ref,
 )
 from jmapc.methods import (
     EmailGet,
@@ -63,22 +63,16 @@ class JMAPClientWrapper(jmapc.Client):
     ) -> Optional[List[Mailbox]]:
         methods: List[Method] = [
             MailboxQuery(filter=query_filter),
-            MailboxGet(
-                ids=ResultReference(
-                    name=MailboxQuery.name,
-                    path="/ids",
-                    result_of="0",
-                ),
-            ),
+            MailboxGet(Ref("/ids")),
         ]
-        results = self.method_calls(methods)
+        results = self.request(methods)
         assert (
-            len(results) == 2 and results[1][0] == "1"
+            len(results) == 2 and results[1].id == "1.Mailbox/get"
         ), "Expected 2 method responses in result"
         assert isinstance(
-            results[1][1], MailboxGetResponse
+            results[1].response, MailboxGetResponse
         ), "Expected MailboxGetResponse in response"
-        return results[1][1].data
+        return results[1].response.data
 
     @functools.lru_cache(maxsize=None)
     def mailbox_by_name(self, name: str) -> Optional[Mailbox]:
@@ -93,7 +87,7 @@ class JMAPClientWrapper(jmapc.Client):
 
     @functools.cached_property
     def identities(self) -> List[Identity]:
-        result = self.method_call(IdentityGet())
+        result = self.request(IdentityGet())
         assert isinstance(result, IdentityGetResponse)
         return result.data
 
@@ -138,30 +132,17 @@ class JMAPClientWrapper(jmapc.Client):
                 sort=[Comparator(property="receivedAt", is_ascending=False)],
                 limit=self.THREADS_GET_LIMIT,
             ),
-            EmailGet(
-                ids=ResultReference(
-                    name=EmailQuery.name,
-                    path="/ids",
-                    result_of="0",
-                ),
-                properties=["threadId"],
-            ),
-            ThreadGet(
-                ids=ResultReference(
-                    name=EmailGet.name,
-                    path="/list/*/threadId",
-                    result_of="1",
-                )
-            ),
+            EmailGet(ids=Ref("/ids"), properties=["threadId"]),
+            ThreadGet(ids=Ref("/list/*/threadId")),
         ]
-        results = self.method_calls(methods)
-        assert isinstance(results[2][1], ThreadGetResponse)
+        results = self.request(methods)
+        assert isinstance(results[2].response, ThreadGetResponse)
         email_ids = [
             thread.email_ids[0]
-            for thread in results[2][1].data
+            for thread in results[2].response.data
             if len(thread.email_ids) == 1
         ]
-        result = self.method_call(
+        result = self.request(
             EmailGet(
                 ids=email_ids,
                 fetch_all_body_values=True,
@@ -189,7 +170,7 @@ class JMAPClientWrapper(jmapc.Client):
             print(json.dumps(method.to_dict(), indent=4, sort_keys=True))
             print(">>>>>>>>>>")
             return
-        self.method_call(method)
+        self.request(method)
 
     def _get_reply_address(self, email: Email) -> str:
         if email.reply_to:
@@ -247,6 +228,7 @@ class JMAPClientWrapper(jmapc.Client):
     ) -> Optional[EmailSubmission]:
         drafts_mailbox = self.mailbox_by_name(self.drafts_name)
         assert isinstance(drafts_mailbox, Mailbox)
+        assert drafts_mailbox.id
         if not email.keywords:
             email.keywords = dict()
         email.keywords["$draft"] = True
@@ -297,10 +279,10 @@ class JMAPClientWrapper(jmapc.Client):
                 print(json.dumps(method.to_dict(), indent=4, sort_keys=True))
             print(">>>>>>>>>>")
             return None
-        results = self.method_calls(methods)
+        results = self.request(methods)
 
         # Retrieve EmailSubmission/set method response from method responses
-        email_send_result = results[1][1]
+        email_send_result = results[1].response
         assert isinstance(
             email_send_result, EmailSubmissionSetResponse
         ), f"Error sending email: f{email_send_result}"

@@ -27,8 +27,7 @@ def wafflesbot() -> Iterable[Waffles]:
     with freeze_time("1994-08-24 12:01:02"):
         yield Waffles(
             host="jmap-example.localhost",
-            user="ness",
-            password="pk_fire",
+            api_token="ness__pk_fire",
             reply_content=(
                 "<b>Hi there</b>. I'm a <i>test</i> message "
                 "for unit testing.<br />"
@@ -38,17 +37,13 @@ def wafflesbot() -> Iterable[Waffles]:
 
 
 @pytest.fixture
-def mock_methods(wafflesbot: Waffles) -> Iterable[mock.MagicMock]:
-    methods_mock = mock.MagicMock()
+def mock_request(wafflesbot: Waffles) -> Iterable[mock.MagicMock]:
+    request_mock = mock.MagicMock()
     session_mock = mock.MagicMock(primary_accounts=dict(mail="u1138"))
     with mock.patch.object(
-        wafflesbot.client, "_session", session_mock
-    ), mock.patch.object(
-        wafflesbot.client, "method_call", methods_mock
-    ), mock.patch.object(
-        wafflesbot.client, "method_calls", methods_mock
-    ):
-        yield methods_mock
+        wafflesbot.client, "_jmap_session", session_mock
+    ), mock.patch.object(wafflesbot.client, "request", request_mock):
+        yield request_mock
 
 
 def assert_or_debug_calls(
@@ -81,7 +76,7 @@ def assert_or_debug_calls(
 )
 def test_wafflesbot(
     wafflesbot: Waffles,
-    mock_methods: mock.MagicMock,
+    mock_request: mock.MagicMock,
     dry_run: bool,
     original_email_read: bool,
     original_email_in_inbox: bool,
@@ -124,9 +119,9 @@ def test_wafflesbot(
         )
         if archive_response:
             mock_responses.append(archive_response)
-    mock_methods.side_effect = mock_responses
+    mock_request.side_effect = mock_responses
 
     wafflesbot.process_mailbox("pigeonhole", limit=1)
-    assert_or_debug_calls(mock_methods.call_args_list, expected_calls)
+    assert_or_debug_calls(mock_request.call_args_list, expected_calls)
     with pytest.raises(StopIteration):
-        mock_methods()
+        mock_request()
