@@ -121,7 +121,7 @@ def make_thread_get_call() -> mock._Call:
     return mock.call(ThreadGet(ids=["Tbeef1"]))
 
 
-def make_thread_get_response() -> ThreadGetResponse:
+def make_thread_get_response(has_email_id: bool = True) -> ThreadGetResponse:
     return ThreadGetResponse(
         account_id="u1138",
         state="2187",
@@ -129,9 +129,7 @@ def make_thread_get_response() -> ThreadGetResponse:
         data=[
             Thread(
                 id="Tbeef1",
-                email_ids=[
-                    "Mdeadbeef",
-                ],
+                email_ids=(["Mdeadbeef"] if has_email_id else []),
             ),
         ],
     )

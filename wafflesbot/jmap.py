@@ -343,6 +343,8 @@ class JMAPClientWrapper(jmapc.Client):
             for thread in thread_get_response.data
             if len(thread.email_ids) == 1
         ]
+        if not email_ids:
+            return
         result = self.request(
             EmailGet(
                 ids=email_ids,

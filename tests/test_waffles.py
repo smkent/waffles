@@ -174,3 +174,51 @@ def test_wafflesbot(
     assert_or_debug_calls(mock_request.call_args_list, expected_calls)
     with pytest.raises(StopIteration):
         mock_request()
+
+
+@pytest.mark.parametrize("dry_run", [True, False], ids=["dry_run", "live"])
+@pytest.mark.parametrize(
+    "in_folder", [True, False], ids=["in_folder", "not_in_folder"]
+)
+@pytest.mark.parametrize(
+    "original_email_read", [True, False], ids=["read", "unread"]
+)
+@pytest.mark.parametrize(
+    "original_email_in_inbox", [True, False], ids=["in_inbox", "archived"]
+)
+def test_wafflesbot_ignore_event(
+    wafflesbot: Waffles,
+    mock_request: mock.MagicMock,
+    mock_events: List[sseclient.Event],
+    original_email_read: bool,
+    original_email_in_inbox: bool,
+    dry_run: bool,
+    in_folder: bool,
+) -> None:
+    wafflesbot.client.live_mode = not dry_run
+    mock_events.append(make_email_event(email_state="1118"))
+    mock_events.append(make_email_event(email_state="1119"))
+    expected_calls: List[mock._Call] = []
+    expected_calls.append(make_mailbox_get_call("pigeonhole"))
+    expected_calls.append(make_email_changes_call(since_state="1118"))
+    expected_calls.append(
+        make_email_get_call(properties=["threadId", "mailboxIds"])
+    )
+    mock_responses: List[Any] = []
+    mock_responses.append(make_mailbox_get_response("MBX50", "pigeonhole"))
+    mock_responses.append(make_email_changes_response())
+    mock_responses.append(
+        make_email_get_response(
+            is_read=original_email_read,
+            is_in_inbox=original_email_in_inbox,
+            additional_mailbox=("MBX50" if in_folder else None),
+        )
+    )
+    if in_folder:
+        expected_calls.append(make_thread_get_call())
+        mock_responses.append(make_thread_get_response(has_email_id=False))
+    mock_request.side_effect = mock_responses
+    wafflesbot.run(events=True)
+    assert_or_debug_calls(mock_request.call_args_list, expected_calls)
+    with pytest.raises(StopIteration):
+        mock_request()
