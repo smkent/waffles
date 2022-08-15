@@ -1,7 +1,7 @@
 import logging
 import time
 from datetime import timedelta
-from typing import Any, Optional
+from typing import Any
 
 from jmapc import Email
 from jmapc.logging import log
@@ -15,32 +15,43 @@ class Waffles:
         self,
         *args: Any,
         reply_content: str,
+        mailbox_name: str,
         newer_than_days: int = 1,
         debug: bool = False,
         **kwargs: Any,
     ):
-        self.client = JMAPClientWrapper.create_with_api_token(*args, **kwargs)
+        self.client = JMAPClientWrapper.create_with_api_token(
+            *args,
+            mailbox_name=mailbox_name,
+            new_email_callback=self._handle_email,
+            **kwargs,
+        )
+        self.mailbox_name = mailbox_name
         self.reply_content = reply_content
         self.newer_than_days = newer_than_days
         self._setup_logging()
         log.setLevel(logging.DEBUG if debug else logging.INFO)
 
-    def run(self, mailbox_name: str, limit: int = 0) -> None:
-        since: Optional[timedelta] = None
-        if self.newer_than_days:
-            since = timedelta(days=self.newer_than_days)
-        emails = self.client.get_recent_emails_without_replies(
-            mailbox_name, since=since
-        )
-        for i, email in enumerate(emails):
-            print(
-                f"[{email.received_at}] FROM {email.mail_from}: "
-                f"{email.subject}"
+    def run(self, limit: int = 0, events: bool = True) -> None:
+        if events:
+            self.client.process_events()
+        else:
+            self.client.process_recent_emails_without_replies(
+                since=(
+                    timedelta(days=self.newer_than_days)
+                    if self.newer_than_days
+                    else None
+                ),
+                limit=limit,
             )
-            self._reply(email)
-            self.client.archive_email(email)
-            if limit and i + 1 >= limit:
-                break
+
+    def _handle_email(self, email: Email) -> None:
+        print(
+            f"[{email.received_at}] FROM {email.mail_from}: "
+            f"{email.subject}"
+        )
+        self._reply(email)
+        self.client.archive_email(email)
 
     def _reply(self, email: Email) -> None:
         text_body, html_body, user_agent = compose_reply(

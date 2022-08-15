@@ -1,7 +1,9 @@
+import json
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
 from unittest import mock
 
+import sseclient
 from jmapc import (
     Address,
     Comparator,
@@ -21,6 +23,8 @@ from jmapc import (
 )
 from jmapc import version as jmapc_version
 from jmapc.methods import (
+    EmailChanges,
+    EmailChangesResponse,
     EmailGet,
     EmailGetResponse,
     EmailQuery,
@@ -42,6 +46,16 @@ from replyowl import version as replyowl_version
 from wafflesbot import version as wafflesbot_version
 
 local_tz_abbrev = datetime(1994, 8, 24, 12, 1, 2).astimezone().strftime("%Z")
+
+
+def make_email_event(
+    email_state: str, id: Optional[str] = None
+) -> sseclient.Event:
+    return sseclient.Event(
+        id=id,
+        event="state",
+        data=json.dumps({"changed": {"u1138": {"email": email_state}}}),
+    )
 
 
 def make_identity_get_response() -> IdentityGetResponse:
@@ -103,6 +117,24 @@ def make_mailbox_get_response(id: str, name: str) -> List[InvocationResponse]:
     ]
 
 
+def make_thread_get_call() -> mock._Call:
+    return mock.call(ThreadGet(ids=["Tbeef1"]))
+
+
+def make_thread_get_response(has_email_id: bool = True) -> ThreadGetResponse:
+    return ThreadGetResponse(
+        account_id="u1138",
+        state="2187",
+        not_found=[],
+        data=[
+            Thread(
+                id="Tbeef1",
+                email_ids=(["Mdeadbeef"] if has_email_id else []),
+            ),
+        ],
+    )
+
+
 def make_thread_search_call() -> mock._Call:
     return mock.call(
         [
@@ -144,22 +176,53 @@ def make_thread_search_response() -> List[InvocationResponse]:
     ]
 
 
-def make_email_get_call() -> mock._Call:
+def make_email_changes_call(since_state: str) -> mock._Call:
+    return mock.call(
+        EmailChanges(
+            since_state=since_state,
+        ),
+        raise_errors=True,
+    )
+
+
+def make_email_changes_response() -> EmailChangesResponse:
+    return EmailChangesResponse(
+        account_id="u1138",
+        old_state="2000",
+        new_state="2001",
+        created=["Mdeadbeef"],
+        updated=[],
+        destroyed=[],
+        has_more_changes=False,
+    )
+
+
+def make_email_get_call(
+    properties: Optional[List[str]] = None,
+    fetch_all_body_values: Optional[bool] = None,
+) -> mock._Call:
     return mock.call(
         EmailGet(
             ids=["Mdeadbeef"],
-            fetch_all_body_values=True,
-            max_body_value_bytes=1024**2,
+            fetch_all_body_values=fetch_all_body_values,
+            max_body_value_bytes=(
+                1024**2 if fetch_all_body_values else None
+            ),
+            properties=properties,
         )
     )
 
 
 def make_email_get_response(
-    is_read: bool, is_in_inbox: bool
+    is_read: bool,
+    is_in_inbox: bool,
+    additional_mailbox: Optional[str] = None,
 ) -> EmailGetResponse:
     mailbox_ids = {"MBX2187": True}
     if is_in_inbox:
         mailbox_ids["MBX1000"] = True
+    if additional_mailbox:
+        mailbox_ids[additional_mailbox] = True
     return EmailGetResponse(
         account_id="u1138",
         state="2187",

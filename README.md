@@ -28,41 +28,53 @@ pip install wafflesbot
 
 ## Usage
 
-wafflesbot provides the `waffles` command which can be run interactively or as a
-cronjob.
+wafflesbot provides the `waffles` command, which can either:
+1. Run as a service and reply to emails received via [JMAP server
+   events][jmap-event-source] (the default)
+2. Run as a script to examine recent emails (such as interactively or via a
+   cronjob)
 
 Environment variables:
 * `JMAP_HOST`: JMAP server hostname
-* `JMAP_USER`: Email account username
-* `JMAP_PASSWORD`: Email account password (likely an app password if 2-factor
-  authentication is enabled with your provider)
+* `JMAP_API_TOKEN`: JMAP account API token
 
 Required arguments:
 * `-m/--mailbox`: Name of the folder to process
 * `-r/--reply-content`: Path to file with an HTML reply message
 
+Optional arguments:
+* `-d/--debug`: Enable debug logging
+* `-l/--limit`: Maximum number of emails replies to send (only valid with
+  `-s/--script`)
+* `-n/--days`: Only process email received this many days ago or newer (only
+  valid with `-s/--script`)
+* `-p/--pretend`: Print messages to standard output instead of sending email
+* `-s/--script`: Set to run as a script instead of an event-driven service
+
 ### Invocation examples
 
-Reply to messages in the "Recruiters" folder with the message in `my-reply.html`:
+Listen for new emails, and reply to unreplied messages that appear in the
+"Recruiters" folder with the message in `my-reply.html`:
+
 ```py
 JMAP_HOST=jmap.example.com \
-JMAP_USER=ness \
-JMAP_PASSWORD=pk_fire \
+JMAP_API_TOKEN=ness__pk_fire \
 waffles \
     --mailbox "Recruiters" \
     --reply-content my-reply.html
 ```
 
-Additional argument examples:
+Run as a script and reply to unreplied messages in the "Recruiters" folder with
+the message in `my-reply.html`:
 
-* Only reply to messages received within the last day:
-  * `waffles -m "Recruiters" -r my-reply.html --days 1` (or `-n`)
-* Send at most 2 emails before exiting:
-  * `waffles -m "Recruiters" -r my-reply.html --limit 2` (or `-l`)
-* Instead of sending mail, print constructed email replies to standard output:
-  * `waffles -m "Recruiters" -r my-reply.html --dry-run` (or `-p`)
-* Log JMAP requests and responses to the debug logger:
-  * `waffles -m "Recruiters" -r my-reply.html --debug` (or `-d`)
+```py
+JMAP_HOST=jmap.example.com \
+JMAP_API_TOKEN=ness__pk_fire \
+waffles \
+    --script \
+    --mailbox "Recruiters" \
+    --reply-content my-reply.html
+```
 
 ## Development
 
@@ -83,6 +95,7 @@ Created from [smkent/cookie-python][cookie-python] using
 [fastmail]: https://fastmail.com
 [gh-actions]: https://github.com/smkent/waffles/actions?query=branch%3Amaster
 [jmap]: https://jmap.io
+[jmap-event-source]: https://jmap.io/spec-core.html#event-source
 [jmapc]: https://github.com/smkent/jmapc
 [logo]: https://raw.github.com/smkent/waffles/master/img/waffles.png
 [poetry]: https://python-poetry.org/docs/#installation

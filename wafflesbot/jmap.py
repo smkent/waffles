@@ -1,9 +1,10 @@
+import collections
 import functools
 import json
 import logging
 import re
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 import jmapc
 from jmapc import (
@@ -21,8 +22,11 @@ from jmapc import (
     Mailbox,
     MailboxQueryFilterCondition,
     Ref,
+    TypeState,
 )
 from jmapc.methods import (
+    EmailChanges,
+    EmailChangesResponse,
     EmailGet,
     EmailGetResponse,
     EmailQuery,
@@ -46,6 +50,8 @@ class JMAPClientWrapper(jmapc.Client):
     def __init__(
         self,
         *args: Any,
+        mailbox_name: str,
+        new_email_callback: Callable[[Email], None],
         drafts_name: str = "Drafts",
         sent_name: str = "Sent",
         inbox_name: str = "Inbox",
@@ -57,6 +63,8 @@ class JMAPClientWrapper(jmapc.Client):
         self.sent_name = sent_name
         self.inbox_name = inbox_name
         self.live_mode = live_mode
+        self.mailbox_name = mailbox_name
+        self.new_email_callback = new_email_callback
 
     def _mailbox_query(
         self, query_filter: MailboxQueryFilterCondition
@@ -73,6 +81,22 @@ class JMAPClientWrapper(jmapc.Client):
             results[1].response, MailboxGetResponse
         ), "Expected MailboxGetResponse in response"
         return results[1].response.data
+
+    def process_events(self) -> None:
+        # Listen for events from the EventSource endpoint
+        all_prev_state: Dict[str, TypeState] = collections.defaultdict(
+            TypeState
+        )
+        for event in self.events:
+            logging.debug("Received event {event}")
+            for account_id, new_state in event.data.changed.items():
+                prev_state = all_prev_state[account_id]
+                if new_state != prev_state:
+                    if prev_state.email != new_state.email:
+                        self._handle_email_event(
+                            prev_state.email, new_state.email
+                        )
+                    all_prev_state[account_id] = new_state
 
     @functools.lru_cache(maxsize=None)
     def mailbox_by_name(self, name: str) -> Optional[Mailbox]:
@@ -113,45 +137,6 @@ class JMAPClientWrapper(jmapc.Client):
                 return identity
         return None
 
-    def get_recent_emails_without_replies(
-        self, mailbox_name: str, since: Optional[timedelta] = None
-    ) -> List[Email]:
-        after: Optional[datetime] = None
-        if since:
-            after = datetime.now(tz=timezone.utc) - since
-        mailbox = self.mailbox_by_name(mailbox_name)
-        if not mailbox:
-            raise Exception(f'No mailbox named "{mailbox_name}" found')
-        methods: List[Method] = [
-            EmailQuery(
-                collapse_threads=True,
-                filter=EmailQueryFilterCondition(
-                    in_mailbox=mailbox.id,
-                    after=after,
-                ),
-                sort=[Comparator(property="receivedAt", is_ascending=False)],
-                limit=self.THREADS_GET_LIMIT,
-            ),
-            EmailGet(ids=Ref("/ids"), properties=["threadId"]),
-            ThreadGet(ids=Ref("/list/*/threadId")),
-        ]
-        results = self.request(methods)
-        assert isinstance(results[2].response, ThreadGetResponse)
-        email_ids = [
-            thread.email_ids[0]
-            for thread in results[2].response.data
-            if len(thread.email_ids) == 1
-        ]
-        result = self.request(
-            EmailGet(
-                ids=email_ids,
-                fetch_all_body_values=True,
-                max_body_value_bytes=1024**2,
-            )
-        )
-        assert isinstance(result, EmailGetResponse)
-        return result.data
-
     def archive_email(self, email: Email) -> None:
         if not email.id:
             return
@@ -171,22 +156,6 @@ class JMAPClientWrapper(jmapc.Client):
             print(">>>>>>>>>>")
             return
         self.request(method)
-
-    def _get_reply_address(self, email: Email) -> str:
-        if email.reply_to:
-            assert email.reply_to[0]
-            if email.reply_to[0].email:
-                return email.reply_to[0].email
-        assert email.mail_from
-        assert email.mail_from[0]
-        from_email = email.mail_from[0].email
-        assert from_email
-        return from_email
-
-    def _make_messageid(self, mail_from: str) -> str:
-        dt = datetime.utcnow().isoformat().replace(":", ".").replace("-", ".")
-        dotaddr = re.sub(r"\W", ".", mail_from)
-        return f"{dt}@wafflesbot.{dotaddr}"
 
     def send_reply_to_email(
         self,
@@ -300,3 +269,107 @@ class JMAPClientWrapper(jmapc.Client):
             )
         )
         return sent_data
+
+    def process_recent_emails_without_replies(
+        self, since: Optional[timedelta] = None, limit: int = 0
+    ) -> None:
+        after: Optional[datetime] = None
+        if since:
+            after = datetime.now(tz=timezone.utc) - since
+        mailbox = self.mailbox_by_name(self.mailbox_name)
+        if not mailbox:
+            raise Exception(f'No mailbox named "{self.mailbox_name}" found')
+        methods: List[Method] = [
+            EmailQuery(
+                collapse_threads=True,
+                filter=EmailQueryFilterCondition(
+                    in_mailbox=mailbox.id,
+                    after=after,
+                ),
+                sort=[Comparator(property="receivedAt", is_ascending=False)],
+                limit=self.THREADS_GET_LIMIT,
+            ),
+            EmailGet(ids=Ref("/ids"), properties=["threadId"]),
+            ThreadGet(ids=Ref("/list/*/threadId")),
+        ]
+        results = self.request(methods)
+        assert isinstance(results[2].response, ThreadGetResponse)
+        self._process_email_threads(results[2].response, limit=limit)
+
+    # Create a callback for email state changes
+    def _handle_email_event(
+        self, prev_state: Optional[str], new_state: Optional[str]
+    ) -> None:
+        if not prev_state or not new_state:
+            return
+        mailbox = self.mailbox_by_name(self.mailbox_name)
+        if not mailbox:
+            raise Exception(f'No mailbox named "{self.mailbox_name}" found')
+        email_changes_response = self.request(
+            EmailChanges(since_state=prev_state), raise_errors=True
+        )
+        assert isinstance(email_changes_response, EmailChangesResponse)
+        email_get_changed_response = self.request(
+            EmailGet(
+                ids=list(
+                    set(
+                        email_changes_response.created
+                        + email_changes_response.updated
+                    )
+                ),
+                properties=["threadId", "mailboxIds"],
+            )
+        )
+        assert isinstance(email_get_changed_response, EmailGetResponse)
+        thread_ids = [
+            consider_email.thread_id
+            for consider_email in email_get_changed_response.data
+            if consider_email.thread_id
+            and mailbox.id in (consider_email.mailbox_ids or {}).keys()
+        ]
+        if not thread_ids:
+            return
+        thread_get_response = self.request(ThreadGet(ids=thread_ids))
+        assert isinstance(thread_get_response, ThreadGetResponse)
+        self._process_email_threads(thread_get_response)
+
+    def _process_email_threads(
+        self,
+        thread_get_response: ThreadGetResponse,
+        limit: int = 0,
+    ) -> None:
+        email_ids = [
+            thread.email_ids[0]
+            for thread in thread_get_response.data
+            if len(thread.email_ids) == 1
+        ]
+        if not email_ids:
+            return
+        result = self.request(
+            EmailGet(
+                ids=email_ids,
+                fetch_all_body_values=True,
+                max_body_value_bytes=1024**2,
+            )
+        )
+        assert isinstance(result, EmailGetResponse)
+        for i, email in enumerate(result.data):
+            if limit and i >= limit:
+                break
+            self.new_email_callback(email)
+
+    def _get_reply_address(self, email: Email) -> str:
+        if email.reply_to:
+            assert email.reply_to[0]
+            if email.reply_to[0].email:
+                return email.reply_to[0].email
+        assert email.mail_from
+        assert email.mail_from[0]
+        from_email = email.mail_from[0].email
+        assert from_email
+        return from_email
+
+    def _make_messageid(self, mail_from: str) -> str:
+        dt = datetime.utcnow().isoformat().replace(":", ".").replace("-", ".")
+        dotaddr = re.sub(r"\W", ".", mail_from)
+        return f"{dt}@wafflesbot.{dotaddr}"
