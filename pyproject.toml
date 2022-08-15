@@ -21,8 +21,8 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.8"
-jmapc = "^0.1.5"
 replyowl = "^0.1.1"
+jmapc = "^0.2.0"
 
 [tool.poetry.dev-dependencies]
 black = "*"

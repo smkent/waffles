@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 from unittest import mock
 
 from jmapc import (
@@ -16,7 +16,7 @@ from jmapc import (
     Identity,
     Mailbox,
     MailboxQueryFilterCondition,
-    ResultReference,
+    Ref,
     Thread,
 )
 from jmapc import version as jmapc_version
@@ -29,13 +29,17 @@ from jmapc.methods import (
     EmailSubmissionSet,
     EmailSubmissionSetResponse,
     IdentityGetResponse,
+    InvocationResponse,
     MailboxGet,
     MailboxGetResponse,
     MailboxQuery,
+    Response,
     ThreadGet,
     ThreadGetResponse,
 )
 from replyowl import version as replyowl_version
+
+from wafflesbot import version as wafflesbot_version
 
 local_tz_abbrev = datetime(1994, 8, 24, 12, 1, 2).astimezone().strftime("%Z")
 
@@ -68,25 +72,17 @@ def make_mailbox_get_call(name: str) -> mock._Call:
                     name=name, role=None, parent_id=None
                 )
             ),
-            MailboxGet(
-                ids=ResultReference(
-                    name=MailboxQuery.name,
-                    path="/ids",
-                    result_of="0",
-                ),
-            ),
+            MailboxGet(ids=Ref("/ids")),
         ],
     )
 
 
-def make_mailbox_get_response(
-    id: str, name: str
-) -> List[Tuple[str, Optional[MailboxGetResponse]]]:
+def make_mailbox_get_response(id: str, name: str) -> List[InvocationResponse]:
     return [
-        ("0", None),
-        (
-            "1",
-            MailboxGetResponse(
+        InvocationResponse(id="0.Mailbox/query", response=Response()),
+        InvocationResponse(
+            id="1.Mailbox/get",
+            response=MailboxGetResponse(
                 account_id="u1138",
                 state="2187",
                 not_found=[],
@@ -119,34 +115,19 @@ def make_thread_search_call() -> mock._Call:
                 sort=[Comparator(property="receivedAt", is_ascending=False)],
                 limit=10,
             ),
-            EmailGet(
-                ids=ResultReference(
-                    name=EmailQuery.name,
-                    path="/ids",
-                    result_of="0",
-                ),
-                properties=["threadId"],
-            ),
-            ThreadGet(
-                ids=ResultReference(
-                    name=EmailGet.name,
-                    path="/list/*/threadId",
-                    result_of="1",
-                )
-            ),
+            EmailGet(ids=Ref("/ids"), properties=["threadId"]),
+            ThreadGet(ids=Ref("/list/*/threadId")),
         ],
     )
 
 
-def make_thread_search_response() -> List[
-    Tuple[str, Optional[ThreadGetResponse]]
-]:
+def make_thread_search_response() -> List[InvocationResponse]:
     return [
-        ("0", None),
-        ("1", None),
-        (
-            "2",
-            ThreadGetResponse(
+        InvocationResponse(id="0.Email/query", response=Response()),
+        InvocationResponse(id="1.Email/get", response=Response()),
+        InvocationResponse(
+            id="2.Thread/get",
+            response=ThreadGetResponse(
                 account_id="u1138",
                 state="2187",
                 not_found=[],
@@ -262,7 +243,7 @@ def make_email_send_call() -> mock._Call:
                             EmailHeader(
                                 name="User-Agent",
                                 value=(
-                                    "wafflesbot/0.0.0 "
+                                    f"wafflesbot/{wafflesbot_version} "
                                     f"(jmapc {jmapc_version}, "
                                     f"replyowl {replyowl_version})"
                                 ),
@@ -311,14 +292,12 @@ def make_email_send_call() -> mock._Call:
     )
 
 
-def make_email_send_response() -> List[
-    Tuple[str, Optional[EmailSubmissionSetResponse]]
-]:
+def make_email_send_response() -> List[InvocationResponse]:
     return [
-        ("0", None),
-        (
-            "1",
-            EmailSubmissionSetResponse(
+        InvocationResponse(id="0.Email/set", response=Response()),
+        InvocationResponse(
+            id="1.EmailSubmission/set",
+            response=EmailSubmissionSetResponse(
                 account_id="u1138",
                 old_state="3000",
                 new_state="3001",
