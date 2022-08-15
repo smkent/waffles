@@ -38,10 +38,15 @@ def main() -> None:
         "--dry-run",
         dest="dry_run",
         action="store_true",
-        help=(
-            "Instead of sending email, "
-            "print email API methods to standard output"
-        ),
+        help="Print messages to standard output instead of sending email",
+    )
+    ap.add_argument(
+        "-s",
+        "--script",
+        "--no-events",
+        dest="events",
+        action="store_false",
+        help="Run as a script instead of an event-driven service",
     )
     ap.add_argument(
         "-l",
@@ -51,7 +56,10 @@ def main() -> None:
         metavar="count",
         default=0,
         type=int,
-        help="Maximum number of email replies to send (0 for no limit)",
+        help=(
+            "Maximum number of email replies to send (0 for no limit) (only "
+            "valid with -s/--script) (default: %(default)s)"
+        ),
     )
     ap.add_argument(
         "-n",
@@ -62,8 +70,8 @@ def main() -> None:
         default=1,
         type=int,
         help=(
-            "Only process email received this many days ago or newer "
-            "(default: %(default)s)"
+            "Only process email received this many days ago or newer (only "
+            "valid with -s/--script) (default: %(default)s)"
         ),
     )
 
@@ -77,4 +85,4 @@ def main() -> None:
         newer_than_days=args.newer_than_days,
         mailbox_name=args.mailbox,
     )
-    w.run(limit=args.limit)
+    w.run(limit=args.limit, events=args.events)

@@ -302,13 +302,13 @@ class JMAPClientWrapper(jmapc.Client):
     ) -> None:
         if not prev_state or not new_state:
             return
+        mailbox = self.mailbox_by_name(self.mailbox_name)
+        if not mailbox:
+            raise Exception(f'No mailbox named "{self.mailbox_name}" found')
         email_changes_response = self.request(
             EmailChanges(since_state=prev_state), raise_errors=True
         )
         assert isinstance(email_changes_response, EmailChangesResponse)
-        mailbox = self.mailbox_by_name(self.mailbox_name)
-        if not mailbox:
-            raise Exception(f'No mailbox named "{self.mailbox_name}" found')
         email_get_changed_response = self.request(
             EmailGet(
                 ids=list(
