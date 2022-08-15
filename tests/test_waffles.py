@@ -121,7 +121,7 @@ def test_wafflesbot(
             mock_responses.append(archive_response)
     mock_request.side_effect = mock_responses
 
-    wafflesbot.process_mailbox("pigeonhole", limit=1)
+    wafflesbot.run("pigeonhole", limit=1)
     assert_or_debug_calls(mock_request.call_args_list, expected_calls)
     with pytest.raises(StopIteration):
         mock_request()
