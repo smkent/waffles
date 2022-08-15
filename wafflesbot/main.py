@@ -75,5 +75,6 @@ def main() -> None:
         live_mode=not args.dry_run,
         reply_content=args.reply_content.read(),
         newer_than_days=args.newer_than_days,
+        mailbox_name=args.mailbox,
     )
-    w.run(args.mailbox, limit=args.limit)
+    w.run(limit=args.limit)
