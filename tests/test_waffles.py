@@ -39,11 +39,20 @@ def wafflesbot() -> Iterable[Waffles]:
 @pytest.fixture
 def mock_request(wafflesbot: Waffles) -> Iterable[mock.MagicMock]:
     request_mock = mock.MagicMock()
-    session_mock = mock.MagicMock(primary_accounts=dict(mail="u1138"))
+    session_mock = mock.MagicMock(
+        primary_accounts=dict(mail="u1138"),
+        event_source_url="https://jmap-example.localhost/events/",
+    )
     with mock.patch.object(
         wafflesbot.client, "_jmap_session", session_mock
     ), mock.patch.object(wafflesbot.client, "request", request_mock):
         yield request_mock
+
+
+@pytest.fixture(autouse=True)
+def mock_events(wafflesbot: Waffles) -> Iterable[mock.MagicMock]:
+    with mock.patch.object(wafflesbot.client, "_events") as events_mock:
+        yield events_mock
 
 
 def assert_or_debug_calls(

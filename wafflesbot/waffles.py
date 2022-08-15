@@ -1,7 +1,8 @@
 import logging
 import time
-from datetime import timedelta
-from typing import Any, Optional
+
+# from datetime import timedelta
+from typing import Any
 
 from jmapc import Email
 from jmapc.logging import log
@@ -19,28 +20,27 @@ class Waffles:
         debug: bool = False,
         **kwargs: Any,
     ):
-        self.client = JMAPClientWrapper.create_with_api_token(*args, **kwargs)
+        self.client = JMAPClientWrapper.create_with_api_token(
+            *args, new_email_callback=self.new_email, **kwargs
+        )
         self.reply_content = reply_content
         self.newer_than_days = newer_than_days
         self._setup_logging()
         log.setLevel(logging.DEBUG if debug else logging.INFO)
 
-    def run(self, mailbox_name: str, limit: int = 0) -> None:
-        since: Optional[timedelta] = None
-        if self.newer_than_days:
-            since = timedelta(days=self.newer_than_days)
-        emails = self.client.get_recent_emails_without_replies(
-            mailbox_name, since=since
+    def new_email(self, email: Email) -> None:
+        print("GOT A NEW EMAIL IN WAFFLES")
+        print(email)
+        print(
+            f"[EVENT] [{email.received_at}] FROM {email.mail_from}: "
+            f"{email.subject}"
         )
-        for i, email in enumerate(emails):
-            print(
-                f"[{email.received_at}] FROM {email.mail_from}: "
-                f"{email.subject}"
-            )
-            self._reply(email)
-            self.client.archive_email(email)
-            if limit and i + 1 >= limit:
-                break
+        self._reply(email)
+        self.client.archive_email(email)
+
+    def run(self, mailbox_name: str, limit: int = 0) -> None:
+        self.client.mailbox_name = mailbox_name
+        self.client.process_events()
 
     def _reply(self, email: Email) -> None:
         text_body, html_body, user_agent = compose_reply(

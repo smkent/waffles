@@ -1,9 +1,10 @@
+import collections
 import functools
 import json
 import logging
 import re
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 import jmapc
 from jmapc import (
@@ -21,8 +22,11 @@ from jmapc import (
     Mailbox,
     MailboxQueryFilterCondition,
     Ref,
+    TypeState,
 )
 from jmapc.methods import (
+    EmailChanges,
+    EmailChangesResponse,
     EmailGet,
     EmailGetResponse,
     EmailQuery,
@@ -46,6 +50,7 @@ class JMAPClientWrapper(jmapc.Client):
     def __init__(
         self,
         *args: Any,
+        new_email_callback: Callable[[Email], None],
         drafts_name: str = "Drafts",
         sent_name: str = "Sent",
         inbox_name: str = "Inbox",
@@ -57,6 +62,8 @@ class JMAPClientWrapper(jmapc.Client):
         self.sent_name = sent_name
         self.inbox_name = inbox_name
         self.live_mode = live_mode
+        self.new_email_callback = new_email_callback
+        self.mailbox_name: Optional[str] = None
 
     def _mailbox_query(
         self, query_filter: MailboxQueryFilterCondition
@@ -73,6 +80,80 @@ class JMAPClientWrapper(jmapc.Client):
             results[1].response, MailboxGetResponse
         ), "Expected MailboxGetResponse in response"
         return results[1].response.data
+
+    # Create a callback for email state changes
+    def email_change_callback(
+        self, prev_state: Optional[str], new_state: Optional[str]
+    ) -> None:
+        if not prev_state or not new_state:
+            return
+        email_changes_response = self.request(
+            EmailChanges(since_state=prev_state), raise_errors=True
+        )
+        assert isinstance(email_changes_response, EmailChangesResponse)
+        mailbox = self.mailbox_by_name(self.mailbox_name)
+        if not mailbox:
+            raise Exception(f'No mailbox named "{self.mailbox_name}" found')
+        email_get_changed_response = self.request(
+            EmailGet(
+                ids=list(
+                    set(
+                        email_changes_response.created
+                        + email_changes_response.updated
+                    )
+                ),
+                properties=["threadId", "mailboxIds"],
+            )
+        )
+        assert isinstance(email_get_changed_response, EmailGetResponse)
+        thread_ids = [
+            consider_email.thread_id
+            for consider_email in email_get_changed_response.data
+            if consider_email.thread_id
+            and mailbox.id in (consider_email.mailbox_ids or {}).keys()
+        ]
+        if not thread_ids:
+            print("NO THREADS, return")
+            return
+        thread_get_response = self.request(ThreadGet(ids=thread_ids))
+        assert isinstance(thread_get_response, ThreadGetResponse)
+        email_ids = [
+            thread.email_ids[0]
+            for thread in thread_get_response.data
+            if len(thread.email_ids) == 1
+        ]
+        if not email_ids:
+            print("NO EMAIL IDs, return")
+            return
+        email_get_response = self.request(
+            EmailGet(
+                ids=email_ids,
+                fetch_all_body_values=True,
+                max_body_value_bytes=1024**2,
+            )
+        )
+        assert isinstance(email_get_response, EmailGetResponse)
+        for new_email in email_get_response.data:
+            self.new_email_callback(new_email)
+
+    def process_events(self) -> None:
+        # Listen for events from the EventSource endpoint
+        if not self.mailbox_name:
+            print("NO MAILBOX NAME")
+            return
+        all_prev_state: Dict[str, TypeState] = collections.defaultdict(
+            TypeState
+        )
+        for event in self.events:
+            print(f"GOT EVENT {event}")
+            for account_id, new_state in event.data.changed.items():
+                prev_state = all_prev_state[account_id]
+                if new_state != prev_state:
+                    if prev_state.email != new_state.email:
+                        self.email_change_callback(
+                            prev_state.email, new_state.email
+                        )
+                    all_prev_state[account_id] = new_state
 
     @functools.lru_cache(maxsize=None)
     def mailbox_by_name(self, name: str) -> Optional[Mailbox]:
