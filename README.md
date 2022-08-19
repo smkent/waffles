@@ -2,8 +2,8 @@
 
 [![PyPI](https://img.shields.io/pypi/v/wafflesbot)][pypi]
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/wafflesbot)][pypi]
-[![Build](https://img.shields.io/github/checks-status/smkent/waffles/master?label=build)][gh-actions]
-[![codecov](https://codecov.io/gh/smkent/waffles/branch/master/graph/badge.svg)][codecov]
+[![Build](https://img.shields.io/github/checks-status/smkent/waffles/main?label=build)][gh-actions]
+[![codecov](https://codecov.io/gh/smkent/waffles/branch/main/graph/badge.svg)][codecov]
 [![GitHub stars](https://img.shields.io/github/stars/smkent/waffles?style=social)][repo]
 
 [![wafflesbot][logo]](#)
@@ -93,11 +93,11 @@ Created from [smkent/cookie-python][cookie-python] using
 [cookie-python]: https://github.com/smkent/cookie-python
 [cookiecutter]: https://github.com/cookiecutter/cookiecutter
 [fastmail]: https://fastmail.com
-[gh-actions]: https://github.com/smkent/waffles/actions?query=branch%3Amaster
+[gh-actions]: https://github.com/smkent/waffles/actions?query=branch%3Amain
 [jmap]: https://jmap.io
 [jmap-event-source]: https://jmap.io/spec-core.html#event-source
 [jmapc]: https://github.com/smkent/jmapc
-[logo]: https://raw.github.com/smkent/waffles/master/img/waffles.png
+[logo]: https://raw.github.com/smkent/waffles/main/img/waffles.png
 [poetry]: https://python-poetry.org/docs/#installation
 [pypi]: https://pypi.org/project/wafflesbot/
 [replyowl]: https://github.com/smkent/replyowl
