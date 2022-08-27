@@ -25,12 +25,16 @@ replyowl = "^0.1.1"
 jmapc = "^0.2.0"
 
 [tool.poetry.dev-dependencies]
+bandit = "*"
 black = "*"
 cruft = "*"
 flake8 = "*"
+flake8-bugbear = "*"
 flake8-pyproject = "*"
+flake8-simplify = "*"
 isort = "*"
 mypy = "*"
+pep8-naming = "*"
 poethepoet = "*"
 pytest = "*"
 pytest-cov = "*"
@@ -61,9 +65,9 @@ shell = """
     set -e
     git checkout -b update-cookie
     git reset --hard origin/main
-    before_ref=$(jq -r .commit .cruft.json)
+    before_ref=$(python -c 'import json; print(json.load(open(".cruft.json"))["commit"])')
     cruft update -y
-    after_ref=$(jq -r .commit .cruft.json)
+    after_ref=$(python -c 'import json; print(json.load(open(".cruft.json"))["commit"])')
     poetry lock --no-update
     git add .cruft.json poetry.lock
     (
@@ -75,6 +79,10 @@ shell = """
     ) | git commit -F -
 """
 help = "Apply upstream project template updates"
+
+[tool.poe.tasks.bandit]
+cmd = "bandit -c pyproject.toml -q -r $(echo \"${PROJECT_CODE_DIRS}\" | sed 's:tests/::')"
+help = "Perform security analysis with bandit"
 
 [tool.poe.tasks.black]
 cmd = "black -l 79 --check --diff --color -- ${PROJECT_CODE_DIRS}"
@@ -101,8 +109,11 @@ sequence = ["isort_lint", "black_lint"]
 help = "Run linters"
 
 [tool.poe.tasks.test]
-sequence = ["flake8", "isort", "black", "mypy", "pytest"]
+sequence = ["flake8", "isort", "black", "mypy", "bandit", "pytest"]
 help = "Run all tests"
+
+[tool.bandit]
+skips = ["B101"]  # assert_used
 
 [tool.coverage.run]
 source = ["wafflesbot"]
@@ -137,8 +148,8 @@ addopts = """\
     --cov \
     --cov-append \
     --cov-report term \
-    --cov-report xml:.coverage.xml \
-    --junitxml=tests/pytest.xml \
+    --cov-report xml:.pytest_coverage.xml \
+    --junitxml=.pytest_results.xml \
 """
 
 [tool.tox]

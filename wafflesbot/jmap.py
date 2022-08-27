@@ -98,7 +98,7 @@ class JMAPClientWrapper(jmapc.Client):
                         )
                     all_prev_state[account_id] = new_state
 
-    @functools.lru_cache(maxsize=None)
+    @functools.lru_cache(maxsize=None)  # noqa: B019
     def mailbox_by_name(self, name: str) -> Optional[Mailbox]:
         # Retrieve the Mailbox ID for Drafts
         mailboxes = self._mailbox_query(MailboxQueryFilterCondition(name=name))
@@ -119,7 +119,7 @@ class JMAPClientWrapper(jmapc.Client):
     def identities_by_email(self) -> Dict[str, Identity]:
         return {identity.email: identity for identity in self.identities}
 
-    @functools.lru_cache(maxsize=None)
+    @functools.lru_cache(maxsize=None)  # noqa: B019
     def identity_by_email(self, email: str) -> Optional[Identity]:
         for identity in self.identities:
             if identity.email == email:
@@ -325,7 +325,7 @@ class JMAPClientWrapper(jmapc.Client):
             consider_email.thread_id
             for consider_email in email_get_changed_response.data
             if consider_email.thread_id
-            and mailbox.id in (consider_email.mailbox_ids or {}).keys()
+            and mailbox.id in (consider_email.mailbox_ids or {})
         ]
         if not thread_ids:
             return
