@@ -391,7 +391,7 @@ jinja2 = "*"
 
 [[package]]
 name = "jmapc"
-version = "0.2.2"
+version = "0.2.3"
 description = "JMAP client library for Python"
 category = "main"
 optional = false
@@ -688,7 +688,7 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "replyowl"
-version = "0.1.1"
+version = "0.1.2"
 description = "Email reply body generator for HTML and text"
 category = "main"
 optional = false
@@ -1094,8 +1094,8 @@ jinja2-time = [
     {file = "jinja2_time-0.2.0-py2.py3-none-any.whl", hash = "sha256:d3eab6605e3ec8b7a0863df09cc1d23714908fa61aa6986a845c20ba488b4efa"},
 ]
 jmapc = [
-    {file = "jmapc-0.2.2-py3-none-any.whl", hash = "sha256:d309561b8d2792cb5d504fc7afbc026894befa1592581afc0bd29d3156caf7a0"},
-    {file = "jmapc-0.2.2.tar.gz", hash = "sha256:e1bd6a9f5a08a2984f3d828f35fdd77948cd68311260c2925f86fef1dd2f8fca"},
+    {file = "jmapc-0.2.3-py3-none-any.whl", hash = "sha256:705be8f8252233a8ce0a68644f0ff591998b0cf8956c5b8239de3f97781bfa55"},
+    {file = "jmapc-0.2.3.tar.gz", hash = "sha256:fa324db4299bac594485ca677aad3524a33eb37947c712728a216c6bf3d95d4d"},
 ]
 markupsafe = [
     {file = "MarkupSafe-2.1.1-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:86b1f75c4e7c2ac2ccdaec2b9022845dbb81880ca318bb7a0a01fbf7813e3812"},
@@ -1288,8 +1288,8 @@ pyyaml = [
     {file = "PyYAML-6.0.tar.gz", hash = "sha256:68fb519c14306fec9720a2a5b45bc9f0c8d1b9c72adf45c37baedfcd949c35a2"},
 ]
 replyowl = [
-    {file = "replyowl-0.1.1-py3-none-any.whl", hash = "sha256:0ba8337c0ba16b2e1711aa0191fbb7172c47caae905ebe1d5f6fc1a29f121406"},
-    {file = "replyowl-0.1.1.tar.gz", hash = "sha256:9a5bf6977e9b051ad329dcec8b0ee0b3f7e8e1b83e130c44126f48ab2ebeb52e"},
+    {file = "replyowl-0.1.2-py3-none-any.whl", hash = "sha256:b0c764066cc44ef4d7b777661cdaf2d9d279dcca446b7018c7fdd27920794fdf"},
+    {file = "replyowl-0.1.2.tar.gz", hash = "sha256:acdab861e0ba4c2c0862db1cd61429ba265b0bbcbbe6d62a1fda3e9b2cac3dc3"},
 ]
 requests = [
     {file = "requests-2.28.1-py3-none-any.whl", hash = "sha256:8fefa2a1a1365bf5520aac41836fbee479da67864514bdb821f31ce07ce65349"},
