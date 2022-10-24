@@ -25,7 +25,7 @@ replyowl = "^0.1.1"
 jmapc = "^0.2.0"
 
 [tool.poetry.dev-dependencies]
-bandit = "*"
+bandit = {extras = ["toml"], version = "*"}
 black = "*"
 cruft = "*"
 flake8 = "*"
