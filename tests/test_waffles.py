@@ -50,8 +50,8 @@ def mock_request(wafflesbot: Waffles) -> Iterable[mock.MagicMock]:
         primary_accounts=dict(mail="u1138"),
         event_source_url="https://jmap-example.localhost/events/",
     )
-    with mock.patch.object(
-        wafflesbot.client, "_jmap_session", session_mock
+    with mock.patch(
+        "jmapc.client.Client.jmap_session", session_mock
     ), mock.patch.object(wafflesbot.client, "request", request_mock):
         yield request_mock
 
