@@ -20,15 +20,36 @@ Built on:
 
 ## Installation and usage with Docker
 
+A Docker container is provided which runs wafflesbot to reply to emails via
+[JMAP server events][jmap-event-source]. JMAP API authentication and reply
+details should be configured using environment variables.
+
 Example `docker-compose.yaml`:
 
 ```yaml
 version: "3.7"
 
+secrets:
+  jmap_api_token:
+    file: path/to/file/with/your/jmap_api_token
+
 services:
-  wafflesbot:
-    image: ghcr.io/smkentwafflesbot:latest
+  waffles:
+    image: ghcr.io/smkent/waffles:latest
+    environment:
+      JMAP_HOST: jmap.example.com
+      JMAP_API_TOKEN: /run/secrets/jmap_api_token
+      WAFFLES_MAILBOX: folder-or-label-name
+      WAFFLES_REPLY_FILE: /autoreply.html
+      # WAFFLES_DRY_RUN: "true" # Uncomment to log actions but not send email
+      # WAFFLES_DEBUG: "true"   # Uncomment to increase log verbosity
+      # Set TZ to your time zone. Often same as the contents of /etc/timezone.
+      TZ: PST8PDT
     restart: unless-stopped
+    volumes:
+      - path/to/your/reply/content.html:/autoreply.html:ro
+    secrets:
+      - jmap_api_token
 ```
 
 Start the container by running:
