@@ -1,0 +1,27 @@
+#!/bin/sh
+
+set -ex
+
+# Locate API token
+if [ -n "${JMAP_API_TOKEN_FILE}" ] && [ -f "${JMAP_API_TOKEN_FILE}" ]; then
+    JMAP_API_TOKEN=$(cat "${JMAP_API_TOKEN_FILE}")
+fi
+if [ -f "${JMAP_API_TOKEN}" ]; then
+    JMAP_API_TOKEN=$(cat "${JMAP_API_TOKEN}")
+fi
+export JMAP_API_TOKEN
+
+waffles_args=
+if [ -n "${WAFFLES_DRY_RUN}" ]; then
+    waffles_args="${waffles_args} --dry-run"
+fi
+if [ -n "${WAFFLES_DEBUG}" ]; then
+    waffles_args="${waffles_args} --debug"
+fi
+
+# shellcheck disable=SC2086
+exec wafflesbot \
+    -m "${WAFFLES_MAILBOX?}" \
+    -r "${WAFFLES_REPLY_FILE?}" \
+    ${waffles_args} \
+    >/proc/1/fd/1 2>/proc/1/fd/2
