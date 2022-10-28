@@ -1,0 +1,6 @@
+version: "3.7"
+
+services:
+  wafflesbot:
+    image: ghcr.io/smkent/wafflesbot:latest
+    restart: unless-stopped
