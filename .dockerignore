@@ -1,8 +1,1 @@
-*.egg-info/
-*.pyc
-.coverage
-.pytest_cache/
-.pytest_coverage.xml
-.pytest_results.xml
-.venv/
-dist/
+.gitignore
