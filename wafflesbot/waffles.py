@@ -4,9 +4,10 @@ from datetime import timedelta
 from typing import Any
 
 from jmapc import Email
-from jmapc.logging import log
+from jmapc.logging import log as jmapc_log
 
 from .jmap import JMAPClientWrapper
+from .logging import log
 from .reply import compose_reply
 
 
@@ -29,8 +30,8 @@ class Waffles:
         self.mailbox_name = mailbox_name
         self.reply_content = reply_content
         self.newer_than_days = newer_than_days
-        self._setup_logging()
-        log.setLevel(logging.DEBUG if debug else logging.INFO)
+        self._setup_logging(debug=debug)
+        jmapc_log.setLevel(logging.DEBUG if debug else logging.INFO)
 
     def run(self, limit: int = 0, events: bool = True) -> None:
         if events:
@@ -46,10 +47,7 @@ class Waffles:
             )
 
     def _handle_email(self, email: Email) -> None:
-        print(
-            f"[{email.received_at}] FROM {email.mail_from}: "
-            f"{email.subject}"
-        )
+        log.info(f"Email from {email.mail_from} -> {email.subject}")
         self._reply(email)
         self.client.archive_email(email)
 
@@ -65,7 +63,7 @@ class Waffles:
             keep_sent_copy=True,
         )
 
-    def _setup_logging(self) -> None:
+    def _setup_logging(self, debug: bool) -> None:
         class UTCFormatter(logging.Formatter):
             converter = time.gmtime
 
@@ -77,4 +75,4 @@ class Waffles:
         )
         handler.setFormatter(formatter)
         logger.addHandler(handler)
-        log.setLevel(logging.INFO)
+        log.setLevel(logging.DEBUG if debug else logging.INFO)
