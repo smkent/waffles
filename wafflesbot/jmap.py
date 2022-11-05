@@ -88,6 +88,7 @@ class JMAPClientWrapper(jmapc.Client):
         all_prev_state: Dict[str, TypeState] = collections.defaultdict(
             TypeState
         )
+        log.info("Listening for events")
         for event in self.events:
             log.debug("Received event {event}")
             for account_id, new_state in event.data.changed.items():
