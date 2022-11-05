@@ -222,3 +222,24 @@ def test_wafflesbot_ignore_event(
     assert_or_debug_calls(mock_request.call_args_list, expected_calls)
     with pytest.raises(StopIteration):
         mock_request()
+
+
+@pytest.mark.parametrize("dry_run", [True, False], ids=["dry_run", "live"])
+def test_wafflesbot_event_error(
+    wafflesbot: Waffles,
+    mock_request: mock.MagicMock,
+    mock_events: List[sseclient.Event],
+    dry_run: bool,
+) -> None:
+    wafflesbot.client.live_mode = not dry_run
+    mock_events.append(make_email_event(email_state="1118"))
+    mock_events.append(make_email_event(email_state="1119"))
+    expected_calls: List[mock._Call] = []
+    expected_calls.append(make_mailbox_get_call("pigeonhole"))
+    mock_responses: List[Any] = []
+    mock_responses.append(Exception)
+    mock_request.side_effect = mock_responses
+    wafflesbot.run(events=True)  # Should not raise an exception
+    assert_or_debug_calls(mock_request.call_args_list, expected_calls)
+    with pytest.raises(StopIteration):
+        mock_request()

@@ -95,9 +95,12 @@ class JMAPClientWrapper(jmapc.Client):
                 prev_state = all_prev_state[account_id]
                 if new_state != prev_state:
                     if prev_state.email != new_state.email:
-                        self._handle_email_event(
-                            prev_state.email, new_state.email
-                        )
+                        try:
+                            self._handle_email_event(
+                                prev_state.email, new_state.email
+                            )
+                        except Exception as e:
+                            log.warn(f"Exception in event loop: {e}")
                     all_prev_state[account_id] = new_state
 
     @functools.lru_cache(maxsize=None)  # noqa: B019
