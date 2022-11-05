@@ -1,7 +1,6 @@
 import collections
 import functools
 import json
-import logging
 import re
 from datetime import datetime, timedelta, timezone
 from typing import Any, Callable, Dict, List, Optional
@@ -42,6 +41,8 @@ from jmapc.methods import (
     ThreadGet,
     ThreadGetResponse,
 )
+
+from .logging import log
 
 
 class JMAPClientWrapper(jmapc.Client):
@@ -87,8 +88,9 @@ class JMAPClientWrapper(jmapc.Client):
         all_prev_state: Dict[str, TypeState] = collections.defaultdict(
             TypeState
         )
+        log.info("Listening for events")
         for event in self.events:
-            logging.debug("Received event {event}")
+            log.debug("Received event {event}")
             for account_id, new_state in event.data.changed.items():
                 prev_state = all_prev_state[account_id]
                 if new_state != prev_state:
@@ -262,7 +264,7 @@ class JMAPClientWrapper(jmapc.Client):
         sent_data = email_send_result.created["emailToSend"]
 
         # Print sent email info
-        logging.info(
+        log.info(
             'Reply for "{}" sent to {}'.format(
                 email.subject,
                 ", ".join([to.email for to in email.to if to.email]),
