@@ -21,7 +21,6 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.8"
-pre-commit = "*"
 replyowl = "^0.1.1"
 jmapc = "^0.2.0"
 
@@ -37,6 +36,7 @@ isort = "*"
 mypy = "*"
 pep8-naming = "*"
 poethepoet = "*"
+pre-commit = "*"
 py = "1.11.0"  # https://github.com/Teemu/pytest-sugar/issues/241
 pytest = "*"
 pytest-cov = "*"
