@@ -21,8 +21,8 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.8"
-replyowl = "^0.1.1"
-jmapc = "^0.2.0"
+replyowl = ">=0.1.0"
+jmapc = ">=0.2.0"
 
 [tool.poetry.dev-dependencies]
 bandit = {extras = ["toml"], version = "*"}
@@ -41,8 +41,8 @@ pytest = "*"
 pytest-cov = "*"
 pytest-github-actions-annotate-failures = "*"
 pytest-sugar = "*"
-freezegun = "^1.1.0"
-types-freezegun = "^1.1.6"
+freezegun = "*"
+types-freezegun = "*"
 
 [tool.poetry.scripts]
 wafflesbot = "wafflesbot.main:main"
