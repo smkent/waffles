@@ -1,6 +1,6 @@
 {
   "template": "https://github.com/smkent/cookie-python",
-  "commit": "d839c1da8c8b6bff0bb0b50230b46fc5c309bca8",
+  "commit": "757202d63c5e720d55fbd434d89ab8f45cd0c6bb",
   "context": {
     "cookiecutter": {
       "project_name": "wafflesbot",
