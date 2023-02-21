@@ -799,14 +799,14 @@ jinja2 = "*"
 
 [[package]]
 name = "jmapc"
-version = "0.2.14"
+version = "0.2.15"
 description = "JMAP client library for Python"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "jmapc-0.2.14-py3-none-any.whl", hash = "sha256:10f4eb2717462e6f7c43c3d1d494453f8c4b842576fabf7e3f9bcb8dfc5a0baf"},
-    {file = "jmapc-0.2.14.tar.gz", hash = "sha256:bfe1ea21bb2eae51d0358462c70ea1566e0b590c1dbc67ba240495d70a405e1b"},
+    {file = "jmapc-0.2.15-py3-none-any.whl", hash = "sha256:cb86e24d62d26ce113b7e9f5b4b1a31bfb6fe7eeec47d5e8d589dabba1d531d3"},
+    {file = "jmapc-0.2.15.tar.gz", hash = "sha256:ce1814b0c3520b1488b8309d53c29d79908e121181272e28f57e792b4b6c828e"},
 ]
 
 [package.dependencies]
@@ -1315,14 +1315,14 @@ files = [
 
 [[package]]
 name = "replyowl"
-version = "0.1.9"
+version = "0.1.10"
 description = "Email reply body generator for HTML and text"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "replyowl-0.1.9-py3-none-any.whl", hash = "sha256:a34b1f39bbf3122190f2ceca94aad96cad233a5db9f77caf278bb119fab7da4a"},
-    {file = "replyowl-0.1.9.tar.gz", hash = "sha256:a4f021ca06cc620be2ac1ef6d909821f7a3575f2eb545328bf8d0cc6e4080f63"},
+    {file = "replyowl-0.1.10-py3-none-any.whl", hash = "sha256:d58c6775b8d39091b7d63ca0789a445b70d0b8b67ad4ee8f177662635d505402"},
+    {file = "replyowl-0.1.10.tar.gz", hash = "sha256:efd9b790cf808f20e2a44758d7d17ded7c4eebc3dfc28b44ed733c5f100eb869"},
 ]
 
 [package.dependencies]
@@ -1353,14 +1353,14 @@ use-chardet-on-py3 = ["chardet (>=3.0.2,<6)"]
 
 [[package]]
 name = "setuptools"
-version = "67.3.2"
+version = "67.3.3"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "setuptools-67.3.2-py3-none-any.whl", hash = "sha256:bb6d8e508de562768f2027902929f8523932fcd1fb784e6d573d2cafac995a48"},
-    {file = "setuptools-67.3.2.tar.gz", hash = "sha256:95f00380ef2ffa41d9bba85d95b27689d923c93dfbafed4aecd7cf988a25e012"},
+    {file = "setuptools-67.3.3-py3-none-any.whl", hash = "sha256:9d3de8591bd6f6522594406fa46a6418eabd0562dacb267f8556675762801514"},
+    {file = "setuptools-67.3.3.tar.gz", hash = "sha256:ed4e75fafe103c79b692f217158ba87edf38d31004b9dbc1913debb48793c828"},
 ]
 
 [package.extras]
