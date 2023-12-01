@@ -361,7 +361,10 @@ class JMAPClientWrapper(jmapc.Client):
         for i, email in enumerate(result.data):
             if limit and i >= limit:
                 break
-            self.new_email_callback(email)
+            try:
+                self.new_email_callback(email)
+            except Exception:
+                log.error(f"Error handling email {email}")
 
     def _get_reply_address(self, email: Email) -> str:
         if email.reply_to:
