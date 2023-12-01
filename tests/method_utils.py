@@ -58,7 +58,9 @@ def make_email_event(
     )
 
 
-def make_identity_get_response() -> IdentityGetResponse:
+def make_identity_get_response(
+    email: str = "ness@onett.example.com",
+) -> IdentityGetResponse:
     return IdentityGetResponse(
         account_id="u1138",
         state="2187",
@@ -67,7 +69,7 @@ def make_identity_get_response() -> IdentityGetResponse:
             Identity(
                 id="ID1",
                 name="ness",
-                email="ness@onett.example.com",
+                email=email,
                 reply_to="ness-reply@onett.example.com",
                 bcc=None,
                 text_signature=None,
