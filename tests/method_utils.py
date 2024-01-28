@@ -207,9 +207,7 @@ def make_email_get_call(
         EmailGet(
             ids=["Mdeadbeef"],
             fetch_all_body_values=fetch_all_body_values,
-            max_body_value_bytes=(
-                1024**2 if fetch_all_body_values else None
-            ),
+            max_body_value_bytes=(1024**2 if fetch_all_body_values else None),
             properties=properties,
         )
     )
