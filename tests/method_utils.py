@@ -1,6 +1,6 @@
 import json
 from datetime import datetime, timezone
-from typing import Dict, List, Optional
+from typing import Optional
 from unittest import mock
 
 import sseclient
@@ -93,7 +93,7 @@ def make_mailbox_get_call(name: str) -> mock._Call:
     )
 
 
-def make_mailbox_get_response(id: str, name: str) -> List[InvocationResponse]:
+def make_mailbox_get_response(id: str, name: str) -> list[InvocationResponse]:
     return [
         InvocationResponse(id="0.Mailbox/query", response=Response()),
         InvocationResponse(
@@ -155,7 +155,7 @@ def make_thread_search_call() -> mock._Call:
     )
 
 
-def make_thread_search_response() -> List[InvocationResponse]:
+def make_thread_search_response() -> list[InvocationResponse]:
     return [
         InvocationResponse(id="0.Email/query", response=Response()),
         InvocationResponse(id="1.Email/get", response=Response()),
@@ -200,7 +200,7 @@ def make_email_changes_response() -> EmailChangesResponse:
 
 
 def make_email_get_call(
-    properties: Optional[List[str]] = None,
+    properties: Optional[list[str]] = None,
     fetch_all_body_values: Optional[bool] = None,
 ) -> mock._Call:
     return mock.call(
@@ -355,7 +355,7 @@ def make_email_send_call() -> mock._Call:
     )
 
 
-def make_email_send_response() -> List[InvocationResponse]:
+def make_email_send_response() -> list[InvocationResponse]:
     return [
         InvocationResponse(id="0.Email/set", response=Response()),
         InvocationResponse(
@@ -382,7 +382,7 @@ def make_email_send_response() -> List[InvocationResponse]:
 def make_email_archive_call(
     is_read: bool, is_in_inbox: bool
 ) -> Optional[mock._Call]:
-    updates: Dict[str, Optional[bool]] = {}
+    updates: dict[str, Optional[bool]] = {}
     if not is_read:
         updates["keywords/$seen"] = True
     if is_in_inbox:

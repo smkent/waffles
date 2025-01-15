@@ -5,7 +5,7 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
   RELEASE_PYTHON_VERSION: "3.12"
-  RELEASE_POETRY_VERSION: "1.8"
+  RELEASE_POETRY_VERSION: "2.0"
 
 on:
   pull_request:

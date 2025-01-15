@@ -1,4 +1,5 @@
-from typing import Any, Iterable, List
+from typing import Any
+from collections.abc import Iterable
 from unittest import mock
 
 import pytest
@@ -50,21 +51,22 @@ def mock_request(wafflesbot: Waffles) -> Iterable[mock.MagicMock]:
         primary_accounts=dict(mail="u1138"),
         event_source_url="https://jmap-example.localhost/events/",
     )
-    with mock.patch(
-        "jmapc.client.Client.jmap_session", session_mock
-    ), mock.patch.object(wafflesbot.client, "request", request_mock):
+    with (
+        mock.patch("jmapc.client.Client.jmap_session", session_mock),
+        mock.patch.object(wafflesbot.client, "request", request_mock),
+    ):
         yield request_mock
 
 
 @pytest.fixture(autouse=True)
-def mock_events(wafflesbot: Waffles) -> Iterable[List[sseclient.Event]]:
-    mock_events_data: List[sseclient.Event] = []
+def mock_events(wafflesbot: Waffles) -> Iterable[list[sseclient.Event]]:
+    mock_events_data: list[sseclient.Event] = []
     with mock.patch.object(wafflesbot.client, "_events", mock_events_data):
         yield mock_events_data
 
 
 def assert_or_debug_calls(
-    call_args_list: mock._CallList, expected_calls: List[mock._Call]
+    call_args_list: mock._CallList, expected_calls: list[mock._Call]
 ) -> None:
     try:
         assert call_args_list == expected_calls
@@ -97,7 +99,7 @@ def assert_or_debug_calls(
 def test_wafflesbot(
     wafflesbot: Waffles,
     mock_request: mock.MagicMock,
-    mock_events: List[sseclient.Event],
+    mock_events: list[sseclient.Event],
     dry_run: bool,
     events: bool,
     original_email_read: bool,
@@ -106,7 +108,7 @@ def test_wafflesbot(
     wafflesbot.client.live_mode = not dry_run
     mock_events.append(make_email_event(email_state="1118"))
     mock_events.append(make_email_event(email_state="1119"))
-    expected_calls: List[mock._Call] = []
+    expected_calls: list[mock._Call] = []
     expected_calls.append(make_mailbox_get_call("pigeonhole"))
     if events:
         expected_calls.append(make_email_changes_call(since_state="1118"))
@@ -131,7 +133,7 @@ def test_wafflesbot(
         )
         if archive_call:
             expected_calls.append(archive_call)
-    mock_responses: List[Any] = []
+    mock_responses: list[Any] = []
     mock_responses.append(make_mailbox_get_response("MBX50", "pigeonhole"))
     if events:
         mock_responses.append(make_email_changes_response())
@@ -179,14 +181,14 @@ def test_wafflesbot(
 def test_wafflesbot_no_matching_identity(
     wafflesbot: Waffles,
     mock_request: mock.MagicMock,
-    mock_events: List[sseclient.Event],
+    mock_events: list[sseclient.Event],
 ) -> None:
     original_email_read = False
     original_email_in_inbox = True
     wafflesbot.client.live_mode = True
     mock_events.append(make_email_event(email_state="1118"))
     mock_events.append(make_email_event(email_state="1119"))
-    expected_calls: List[mock._Call] = []
+    expected_calls: list[mock._Call] = []
     expected_calls.append(make_mailbox_get_call("pigeonhole"))
     expected_calls.append(make_email_changes_call(since_state="1118"))
     expected_calls.append(
@@ -195,7 +197,7 @@ def test_wafflesbot_no_matching_identity(
     expected_calls.append(make_thread_get_call())
     expected_calls.append(make_email_get_call(fetch_all_body_values=True))
     expected_calls.append(mock.call(IdentityGet()))
-    mock_responses: List[Any] = []
+    mock_responses: list[Any] = []
     mock_responses.append(make_mailbox_get_response("MBX50", "pigeonhole"))
     mock_responses.append(make_email_changes_response())
     mock_responses.append(
@@ -235,7 +237,7 @@ def test_wafflesbot_no_matching_identity(
 def test_wafflesbot_ignore_event(
     wafflesbot: Waffles,
     mock_request: mock.MagicMock,
-    mock_events: List[sseclient.Event],
+    mock_events: list[sseclient.Event],
     original_email_read: bool,
     original_email_in_inbox: bool,
     dry_run: bool,
@@ -244,13 +246,13 @@ def test_wafflesbot_ignore_event(
     wafflesbot.client.live_mode = not dry_run
     mock_events.append(make_email_event(email_state="1118"))
     mock_events.append(make_email_event(email_state="1119"))
-    expected_calls: List[mock._Call] = []
+    expected_calls: list[mock._Call] = []
     expected_calls.append(make_mailbox_get_call("pigeonhole"))
     expected_calls.append(make_email_changes_call(since_state="1118"))
     expected_calls.append(
         make_email_get_call(properties=["threadId", "mailboxIds"])
     )
-    mock_responses: List[Any] = []
+    mock_responses: list[Any] = []
     mock_responses.append(make_mailbox_get_response("MBX50", "pigeonhole"))
     mock_responses.append(make_email_changes_response())
     mock_responses.append(
@@ -274,15 +276,15 @@ def test_wafflesbot_ignore_event(
 def test_wafflesbot_event_error(
     wafflesbot: Waffles,
     mock_request: mock.MagicMock,
-    mock_events: List[sseclient.Event],
+    mock_events: list[sseclient.Event],
     dry_run: bool,
 ) -> None:
     wafflesbot.client.live_mode = not dry_run
     mock_events.append(make_email_event(email_state="1118"))
     mock_events.append(make_email_event(email_state="1119"))
-    expected_calls: List[mock._Call] = []
+    expected_calls: list[mock._Call] = []
     expected_calls.append(make_mailbox_get_call("pigeonhole"))
-    mock_responses: List[Any] = []
+    mock_responses: list[Any] = []
     mock_responses.append(Exception)
     mock_request.side_effect = mock_responses
     wafflesbot.run(events=True)  # Should not raise an exception

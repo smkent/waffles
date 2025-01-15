@@ -3,7 +3,7 @@ import functools
 import json
 import re
 from datetime import datetime, timedelta, timezone
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Optional
 
 import jmapc
 from jmapc import (
@@ -69,8 +69,8 @@ class JMAPClientWrapper(jmapc.Client):
 
     def _mailbox_query(
         self, query_filter: MailboxQueryFilterCondition
-    ) -> Optional[List[Mailbox]]:
-        methods: List[Method] = [
+    ) -> Optional[list[Mailbox]]:
+        methods: list[Method] = [
             MailboxQuery(filter=query_filter),
             MailboxGet(Ref("/ids")),
         ]
@@ -85,7 +85,7 @@ class JMAPClientWrapper(jmapc.Client):
 
     def process_events(self) -> None:
         # Listen for events from the EventSource endpoint
-        all_prev_state: Dict[str, TypeState] = collections.defaultdict(
+        all_prev_state: dict[str, TypeState] = collections.defaultdict(
             TypeState
         )
         log.info("Listening for events")
@@ -103,7 +103,7 @@ class JMAPClientWrapper(jmapc.Client):
                             log.warn(f"Exception in event loop: {e}")
                     all_prev_state[account_id] = new_state
 
-    @functools.lru_cache(maxsize=None)  # noqa: B019
+    @functools.cache  # noqa: B019
     def mailbox_by_name(self, name: str) -> Optional[Mailbox]:
         # Retrieve the Mailbox ID for Drafts
         mailboxes = self._mailbox_query(MailboxQueryFilterCondition(name=name))
@@ -115,16 +115,16 @@ class JMAPClientWrapper(jmapc.Client):
         return mailboxes[0]
 
     @functools.cached_property
-    def identities(self) -> List[Identity]:
+    def identities(self) -> list[Identity]:
         result = self.request(IdentityGet())
         assert isinstance(result, IdentityGetResponse)
         return result.data
 
     @functools.cached_property
-    def identities_by_email(self) -> Dict[str, Identity]:
+    def identities_by_email(self) -> dict[str, Identity]:
         return {identity.email: identity for identity in self.identities}
 
-    @functools.lru_cache(maxsize=None)  # noqa: B019
+    @functools.cache  # noqa: B019
     def identity_by_email(self, email: str) -> Optional[Identity]:
         for identity in self.identities:
             if identity.email == email:
@@ -147,7 +147,7 @@ class JMAPClientWrapper(jmapc.Client):
             return
         inbox = self.mailbox_by_name(self.inbox_name)
         assert isinstance(inbox, Mailbox)
-        updates: Dict[str, Optional[bool]] = {}
+        updates: dict[str, Optional[bool]] = {}
         if not email.keywords or "$seen" not in email.keywords:
             updates["keywords/$seen"] = True
         if email.mailbox_ids and inbox.id in email.mailbox_ids:
@@ -176,7 +176,7 @@ class JMAPClientWrapper(jmapc.Client):
         ), "No identity found matching any recipients"
         mail_to = self._get_reply_address(email)
         assert email.message_id and email.message_id[0]
-        headers: List[EmailHeader] = []
+        headers: list[EmailHeader] = []
         if user_agent:
             headers.append(EmailHeader(name="User-Agent", value=user_agent))
 
@@ -218,7 +218,7 @@ class JMAPClientWrapper(jmapc.Client):
             rcpt_to=[Address(email=to.email) for to in email.to],
         )
 
-        methods: List[Method] = [
+        methods: list[Method] = [
             # Create a draft email in the Drafts mailbox
             EmailSet(create=dict(draft=email)),
         ]
@@ -284,7 +284,7 @@ class JMAPClientWrapper(jmapc.Client):
         mailbox = self.mailbox_by_name(self.mailbox_name)
         if not mailbox:
             raise Exception(f'No mailbox named "{self.mailbox_name}" found')
-        methods: List[Method] = [
+        methods: list[Method] = [
             EmailQuery(
                 collapse_threads=True,
                 filter=EmailQueryFilterCondition(

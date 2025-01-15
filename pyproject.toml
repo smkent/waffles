@@ -1,13 +1,12 @@
 [build-system]
-requires = ["poetry-core>=1.2.0", "poetry-dynamic-versioning"]
-build-backend = "poetry_dynamic_versioning.backend"
+requires = ["poetry-core>=2.0.0,<3.0.0", "poetry-dynamic-versioning"]
+build-backend = "poetry.core.masonry.api"
 
-[tool.poetry]
+[project]
 name = "wafflesbot"
-version = "0.0.0"
 description = "Tech recruiter auto reply bot using JMAP"
 license = "GPL-3.0-or-later"
-authors = ["Stephen Kent <smkent@smkent.net>"]
+authors = [ { name = "Stephen Kent", email = "smkent@smkent.net" } ]
 readme = "README.md"
 repository = "https://github.com/smkent/waffles"
 classifiers = [
@@ -18,13 +17,24 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Typing :: Typed",
 ]
+requires-python = ">=3.9,<4.0"
+dynamic = [ "version" ]
+dependencies = [
+    "jmapc (>=0.2.0)",
+    "replyowl (>=0.1.0)",
+]
 
-[tool.poetry.dependencies]
-python = "^3.8"
-replyowl = ">=0.1.0"
-jmapc = ">=0.2.0"
+[project.scripts]
+wafflesbot = "wafflesbot.main:main"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry]
+requires-poetry = ">=2.0"
+version = "0.0.0"
+
+[tool.poetry.requires-plugins]
+poetry-dynamic-versioning = { version = ">=1.0.0,<2.0.0", extras = ["plugin"] }
+
+[tool.poetry.group.dev.dependencies]
 bandit = {extras = ["toml"], version = "*"}
 black = "*"
 cruft = "*"
@@ -43,9 +53,6 @@ pytest-github-actions-annotate-failures = "*"
 pytest-sugar = "*"
 freezegun = "*"
 types-freezegun = "*"
-
-[tool.poetry.scripts]
-wafflesbot = "wafflesbot.main:main"
 
 [tool.poetry-dynamic-versioning]
 enable = true
