@@ -1,4 +1,4 @@
-from typing import Optional, Tuple
+from typing import Optional
 
 from jmapc import Email
 from jmapc import version as jmapc_version
@@ -28,7 +28,7 @@ def _get_email_body_html(email: Email) -> Optional[str]:
 
 def compose_reply(
     email: Email, reply_content: str
-) -> Tuple[str, Optional[str], Optional[str]]:
+) -> tuple[str, Optional[str], Optional[str]]:
     replyowl = ReplyOwl()
     text_body, html_body = replyowl.compose_reply(
         content=reply_content,
