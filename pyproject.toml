@@ -10,7 +10,7 @@ authors = [ { name = "Stephen Kent", email = "smkent@smkent.net" } ]
 readme = "README.md"
 repository = "https://github.com/smkent/waffles"
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 7 - Inactive",
     "Operating System :: OS Independent",
     "Topic :: Communications :: Email :: Post-Office",
     "Topic :: Office/Business :: Groupware",

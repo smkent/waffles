@@ -1,4 +1,10 @@
-# wafflesbot: Email auto reply bot for [JMAP][jmap] mailboxes
+> [!WARNING]
+>
+> **wafflesbot is deprecated!** No further maintenance or updates are planned.
+
+[![No Maintenance Intended](http://unmaintained.tech/badge.svg)](http://unmaintained.tech/)
+
+# DEPRECATED: wafflesbot: Email auto reply bot for [JMAP][jmap] mailboxes
 
 [![PyPI](https://img.shields.io/pypi/v/wafflesbot)][pypi]
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/wafflesbot)][pypi]
